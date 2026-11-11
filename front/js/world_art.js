@@ -1273,6 +1273,15 @@ function drawBossEntryScene(ctx, t, room, bossId, game) {
   }
 }
 
+function drawEndingBackground(ctx, t) {
+  // escola apagada, portão fechado: a cena final depois que Kennedito saiu
+  drawGateScene(ctx, 15.6 + (t || 0) * 0.2, 'cutscene');
+  ctx.save();
+  ctx.fillStyle = 'rgba(2,8,6,0.55)';
+  ctx.fillRect(0, 0, GAME_W, GAME_H);
+  ctx.restore();
+}
+
 function o_pauseShadow() { return false; }
 
 /* ---------------- cena de entrada na escola ---------------- */

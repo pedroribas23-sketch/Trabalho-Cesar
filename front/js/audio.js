@@ -336,7 +336,8 @@ class AudioEngine {
       this.tone(cfg.scale[cfg.scale.length - 1] * 2, 0.9, 'sine', 0.018, null, 0, bus);
     }
     if (this.theme === 'ending' && b % 6 === 1) {
-      this.tone(cfg.scale[(b / 2) % cfg.scale.length], 1.4, 'sine', 0.025, null, 0, bus);
+      const note = cfg.scale[Math.floor(b / 2) % cfg.scale.length];
+      if (note) this.tone(note, 1.4, 'sine', 0.025, null, 0, bus);
     }
   }
 }

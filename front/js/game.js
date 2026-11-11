@@ -601,6 +601,14 @@ class Game {
       const entry = (typeof LORE_BY_ID !== 'undefined') ? LORE_BY_ID[room.loreId] : null;
       if (entry) this.loreItems.push(new LoreItem(this, { id: entry.id, title: entry.title, text: entry.text, x: room.lore.x, y: room.lore.y }));
     }
+    // se o chefe já caiu mas a chave ficou no chão, ela volta a aparecer
+    if (room.boss && this.isBossDefeated(room.boss) && !this.hasKey(room.boss)) {
+      const def = (typeof BOSS_DEFS !== 'undefined') ? BOSS_DEFS[room.boss] : null;
+      const keyX = room.arena ? room.arena.bossX : 320;
+      this.pickups.push(new Pickup(this, 'key', keyX, (room.floorY || 300) - 4, {
+        label: def ? def.keyName : 'CHAVE'
+      }));
+    }
 
     const maxCam = Math.max(0, room.width - GAME_W);
     this.camera.x = clamp(spawn.x - GAME_W / 2, 0, maxCam);
@@ -1098,10 +1106,6 @@ class Game {
     if (this.state !== 'victory' || !this.victory) return;
     const v = this.victory;
     this.victory = null;
-    if (v.final) {
-      this.startFinalCutscene();
-      return;
-    }
     // a chave cai no chão da arena: o jogador precisa recolhê-la
     const room = this.room;
     const floorY = room ? room.floorY : 300;
@@ -1127,14 +1131,20 @@ class Game {
     const name = pickup.label || (BOSS_DEFS[bossId] ? BOSS_DEFS[bossId].keyName : 'CHAVE');
     if (this.audio) this.audio.sfx('key');
     this.spawnParticles(pickup.x, pickup.y - 16, 20, '#f2c45a', 'ring');
+    if (this.pendingAbilityText) {
+      this.toast(this.pendingAbilityText, 3400);
+      this.pendingAbilityText = '';
+    }
+    // a chave mestra encerra a jornada: a cutscene final começa aqui
+    if (bossId === 'guardiao') {
+      this.toast(name + ' OBTIDA — o portão da escola se abriu.', 4000);
+      this.startFinalCutscene();
+      return;
+    }
     if (nextRoom && ROOMS[nextRoom]) {
       this.toast(name + ' OBTIDA — a porta ' + (ROOMS[nextRoom].short || '') + ' se abriu. Volte ao corredor.', 4600);
     } else {
       this.toast(name + ' OBTIDA.', 3000);
-    }
-    if (this.pendingAbilityText) {
-      this.toast(this.pendingAbilityText, 3400);
-      this.pendingAbilityText = '';
     }
   }
 

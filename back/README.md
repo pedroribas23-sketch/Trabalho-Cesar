@@ -1,7 +1,9 @@
 # Back — API do Kennedito
 
-Contas, saves na nuvem e ranking de tempos do **KENNEDITO: A ESCOLA QUE NUNCA
-MORRE**. TypeScript + Express 5 + Postgres.
+Contas, saves na nuvem e ranking de tempos do **ESCOLA ABANDONADA**.
+TypeScript + Express 5 + Postgres.
+
+O **banco fica no Neon** (Postgres, plano gratuito) e a **API roda no Render**.
 
 ```
 back/
@@ -18,18 +20,36 @@ back/
 │   └── validation.ts   # schemas zod
 ├── sql/001_init.sql    # schema para rodar direto no psql
 ├── test/               # testes com node:test + pg-mem
-└── .env.example
+├── .env.example
+└── README.md
 ```
 
 O `render.yaml` do deploy fica na raiz do repositório (exigência do Render
 Blueprint) e aponta para esta pasta.
+
+## Banco no Neon
+
+O projeto `kennedito` já está criado com o schema aplicado. Para conectar:
+
+1. Neon Console → projeto **kennedito** → branch **main** → **Connect**
+2. Copie a **Pooled connection string** (a que tem `-pooler` no host)
+3. Cole no `.env` local e no `DATABASE_URL` do Render
+
+```
+DATABASE_URL=postgresql://USER:SENHA@ep-...-pooler.c-9.us-east-2.aws.neon.tech/neondb?sslmode=require
+DATABASE_SSL=true
+```
+
+Use sempre a **pooled**: é ela que passa pelo pooler do Neon e aguenta o
+tráfego da API. A senha **nunca** vai para o GitHub — no `render.yaml` a
+variável está como `sync: false`, então o Render pede o valor no deploy.
 
 ## Rodando local
 
 ```bash
 cd back
 npm install
-cp .env.example .env     # ajuste o DATABASE_URL
+cp .env.example .env     # cole a DATABASE_URL do Neon
 npm run dev               # http://localhost:3001
 ```
 
@@ -44,8 +64,8 @@ npm run migrate
 
 | Variável       | Padrão          | O que é                                              |
 | -------------- | --------------- | --------------------------------------------------- |
-| `DATABASE_URL` | —               | **Obrigatória.** Connection string do Postgres.      |
-| `DATABASE_SSL` | `false`         | `true` quando a conexão é externa.                  |
+| `DATABASE_URL` | —               | **Obrigatória.** Pooled connection string do Neon.   |
+| `DATABASE_SSL` | `false`         | `true` para o Neon (que exige SSL).                  |
 | `PORT`         | `3001`          | Porta HTTP.                                          |
 | `HOST`         | `0.0.0.0`       | Interface de escuta.                                 |
 | `CORS_ORIGIN`  | `*`             | Origens permitidas, separadas por vírgula.           |
@@ -121,19 +141,24 @@ O save é salvo como `jsonb` e validado com zod em `validation.ts`:
 
 ## Deploy no Render
 
-O [`render.yaml`](../render.yaml) da raiz do repositório já descreve o plano
-completo (web service + Postgres):
+O [`render.yaml`](../render.yaml) da raiz do repositório já descreve o web
+service completo (com o banco vindo do Neon):
 
 ```bash
 # no Render: New → Blueprint, aponte para o repositório
 ```
 
-Ou, manualmente:
+O Blueprint cria o web service e, na hora do deploy, pede o `DATABASE_URL`
+(`sync: false`) — cole ali a **pooled connection string** do Neon. Assim a
+senha do banco nunca passa pelo GitHub.
+
+Manualmente:
 
 1. Crie um **Web Service** apontando para o repositório, com
    *Root Directory* = `back`.
 2. Build: `npm install && npm run build` · Start: `npm run start`.
-3. Crie um **Postgres** e copie a *Internal Database URL* para `DATABASE_URL`.
+3. Em *Environment*, adicione `DATABASE_URL` (pooled do Neon) e
+   `DATABASE_SSL=true`.
 4. Ajuste `CORS_ORIGIN` para o domínio do front.
 
 Depois é só colocar a URL da API em `front/js/config.js`.

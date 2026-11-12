@@ -1,4 +1,4 @@
-# KENNEDITO: A ESCOLA QUE NUNCA MORRE
+# ESCOLA ABANDONADA
 
 Jogo 2D de terror escolar em português. Kennedito entra numa escola abandonada,
 enfrenta cinco professores e precisa sair vivo — com a chave mestra.
@@ -14,10 +14,11 @@ O repositório está dividido em duas partes:
 /
 ├── front/          ← o jogo
 │   ├── index.html
-│   ├── css/style.css
-│   ├── js/         (12 arquivos: arte, áudio, entidades, chefes, levels, ui, game)
+│   ├── css/style.css + css/fonts.css   (fonte pixelada embutida)
+│   ├── js/         (13 arquivos: arte, áudio, entidades, chefes, levels, ui, game)
 │   ├── kennedito.html   ← o jogo inteiro num arquivo só
 │   ├── build-single.js  ← gera o kennedito.html
+│   ├── build-fonts.js   ← gera o css/fonts.css
 │   └── check-single.js  ← confere se o kennedito.html está atualizado
 ├── back/           ← a API
 │   ├── src/        (10 arquivos TypeScript)
@@ -25,8 +26,11 @@ O repositório está dividido em duas partes:
 │   ├── sql/001_init.sql
 │   ├── package.json / tsconfig.json / .env.example
 │   └── README.md
+├── .github/workflows/pages.yml  ← publica o jogo no GitHub Pages
 ├── render.yaml     ← blueprint do Render (precisa ficar na raiz)
-└── README.md
+├── index.html      ← redireciona para o jogo
+├── README.md
+└── .gitignore
 ```
 
 ## O jogo
@@ -36,11 +40,15 @@ que o chefe deixa é a única que destranca a sala seguinte.
 
 | Ordem | Sala              | Chefe                    | Chave que ele deixa      | Habilidade liberada |
 | ----- | ----------------- | ------------------------ | ------------------------ | ------------------- |
-| 1     | Sala 5            | O Mestre das Aulas       | Chave da Sala 6          | Caderno voador      |
-| 2     | Sala 6            | Professor dos Programas  | Chave da Sala 7          | Dash aéreo          |
-| 3     | Sala 7            | O Último Feiura          | Chave da Quadra          | Grito de Guerra      |
-| 4     | Quadra            | O Professor Esquecido    | Chave do Laboratório     | Pulo duplo          |
+| 1     | Sala 5            | O Mestre das Aulas       | Chave da Sala 6          | Dash aéreo          |
+| 2     | Sala 6            | Professor dos Programas  | Chave da Sala 7          | Grito de Guerra      |
+| 3     | Sala 7            | O Último Feiura          | Chave da Quadra          | Pulo duplo          |
+| 4     | Quadra            | O Professor Esquecido    | Chave do Laboratório     | Caderno voador      |
 | 5     | Laboratório       | O Guardião dos Sistemas  | Chave mestra             | — (final)           |
+
+**Combate à distância:** o ataque base (`J`/`X` ou clique esquerdo) arremessa um
+**giz** na direção do cursor, em 8 direções. O `L`/`V` lança o **lápis**
+perfurante. O `K`/Shift dá dash.
 
 **Cutscenes**
 
@@ -57,9 +65,9 @@ que o chefe deixa é a única que destranca a sala seguinte.
 | --------------- | ------------------- | ----------------- | ---------- |
 | Mover           | A / D ou ← / →      | —                 | Direcional |
 | Pular           | Espaço / W / ↑      | —                 | ↑          |
-| Atacar          | J / X               | Botão esquerdo    | A          |
+| Arremessar giz  | J / X               | Botão esquerdo    | A          |
 | Dash            | K / C / Shift       | Botão direito     | D          |
-| Caderno voador  | L / V               | Botão do meio     | L          |
+| Lápis           | L / V               | Botão do meio     | L          |
 | Grito de Guerra | U                   | —                 | U          |
 | Interagir / ler | E                   | —                 | —          |
 | Pausar          | Esc / P             | —                 | —          |
@@ -86,16 +94,17 @@ node build-single.js
 
 ## Publicando no GitHub Pages
 
-1. Crie um repositório e suba este conteúdo.
-2. Em **Settings → Pages**, escolha *Deploy from a branch*, branch `main` e
-   pasta `/front`.
-3. O jogo fica disponível em `https://<usuario>.github.io/<repositorio>/front/`.
+O repositório já tem a workflow `.github/workflows/pages.yml`. Para publicar:
+
+1. Em **Settings → Pages**, escolha *Source: **GitHub Actions*** e salve.
+2. A workflow dispara sozinha no próximo push e publica a pasta `front/`.
+3. O jogo fica em `https://pedroribas23-sketch.github.io/Trabalho-Cesar/front/`.
 
 Para apontar o ranking e as contas para a API, edite `front/js/config.js`:
 
 ```js
 window.KC_CONFIG = {
-  apiBase: "https://sua-api.onrender.com",
+  apiBase: "https://kennedito-api.onrender.com",
   localApiBase: "http://localhost:3001",
   requestTimeoutMs: 8500
 };
@@ -106,10 +115,12 @@ ranking mostra apenas os tempos salvos no próprio dispositivo.
 
 ## Rodando o back
 
+O banco fica no **Neon** (Postgres) e a API no **Render**.
+
 ```bash
 cd back
 npm install
-cp .env.example .env      # ajuste o DATABASE_URL
+cp .env.example .env      # cole a DATABASE_URL do Neon (pooled) e use DATABASE_SSL=true
 npm run dev               # http://localhost:3001
 ```
 

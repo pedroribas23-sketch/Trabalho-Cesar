@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
   <meta name="theme-color" content="#050b08">
-  <title>Kennedito: A Escola Que Nunca Morre</title>
+  <title>Escola Abandonada</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23071a12'/%3E%3Ccircle cx='16' cy='13' r='7' fill='%2358ff9d'/%3E%3Cellipse cx='16' cy='13' rx='9' ry='3' fill='%232ea96e'/%3E%3Ccircle cx='13' cy='12' r='1.6' fill='%23071a12'/%3E%3Ccircle cx='19' cy='12' r='1.6' fill='%23071a12'/%3E%3C/svg%3E">
   <link rel="stylesheet" href="css/style.css">
 </head>
@@ -37,8 +37,8 @@
         <section id="screen-title" class="screen active">
           <div class="title-wrap">
             <div class="kicker">UM JOGO DE TERROR ESCOLAR</div>
-            <h1 class="logo"><span>KENNE</span><span>DITO</span></h1>
-            <div class="subtitle">A ESCOLA QUE NUNCA MORRE</div>
+            <h1 class="logo"><span>ESCOLA</span><span>ABANDONADA</span></h1>
+            <div class="subtitle">KENNEDITO E A ESCOLA QUE NUNCA MORRE</div>
             <div class="menu" id="title-menu">
               <button id="btn-continue" class="btn primary hidden" type="button">Continuar</button>
               <button id="btn-new" class="btn primary" type="button">Novo jogo</button>
@@ -47,7 +47,7 @@
               <button id="btn-account" class="btn" type="button">Conta / Nuvem</button>
               <button id="btn-sound" class="btn" type="button">Som: Ligado</button>
             </div>
-            <div class="footnote">WASD / setas · Espaço pula · J ataca · K dash · L caderno</div>
+            <div class="footnote">WASD / setas · Espaço pula · J arremessa giz · K dash · L lápis</div>
             <div class="version">v1.0 · CEPK</div>
           </div>
         </section>
@@ -90,18 +90,18 @@
                 <h3>Teclado</h3>
                 <p><b>A / D</b> ou <b>← / →</b> — mover</p>
                 <p><b>Espaço / W / ↑</b> — pular</p>
-                <p><b>J / X</b> — atacar</p>
+                <p><b>J / X</b> — arremessar giz (à distância)</p>
                 <p><b>K / C / Shift</b> — dash</p>
-                <p><b>L / V</b> — caderno voador</p>
+                <p><b>L / V</b> — lápis perfurante</p>
                 <p><b>U</b> — grito de guerra</p>
                 <p><b>E / Enter</b> — interagir / avançar</p>
                 <p><b>Esc / P</b> — pausar</p>
               </div>
               <div>
                 <h3>Mouse</h3>
-                <p><b>Clique esquerdo</b> — atacar na direção do cursor</p>
+                <p><b>Clique esquerdo</b> — arremessar giz na direção do cursor</p>
                 <p><b>Clique direito</b> — dash</p>
-                <p><b>Clique do meio</b> — caderno voador mirado</p>
+                <p><b>Clique do meio</b> — lápis perfurante mirado</p>
                 <p>Os menus também funcionam por clique.</p>
                 <h3>Celular</h3>
                 <p>Use o direcional e os botões na tela. Jogue na horizontal.</p>
@@ -185,7 +185,7 @@
         <section id="screen-ending" class="screen">
           <div class="panel wide ending-panel">
             <div class="kicker">FIM</div>
-            <h2>A escola nunca morre.</h2>
+            <h2>Escola Abandonada.</h2>
             <p id="ending-text" class="status-line">Mas, por enquanto... ela dorme.</p>
             <div id="ending-stats" class="ending-stats"></div>
             <div class="row">
@@ -214,6 +214,7 @@
   </div>
 
   <script src="js/util.js"></script>
+  <script src="js/pixelfont.js"></script>
   <script src="js/audio.js"></script>
   <script src="js/input.js"></script>
   <script src="js/config.js"></script>

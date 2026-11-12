@@ -164,27 +164,36 @@ function withAlpha(hex, alpha) {
   return 'rgba(' + ((n >> 16) & 255) + ',' + ((n >> 8) & 255) + ',' + (n & 255) + ',' + alpha + ')';
 }
 
+/* =========================================================
+   Texto no canvas.
+   Por padrao usa a fonte bitmap 5x7 do jogo (pixelfont.js),
+   que mantem a mesma gracao da arte. As funcoes do sistema
+   continuam disponiveis para textos que exigem outra fonte.
+   ========================================================= */
+
 function drawPixelText(ctx, text, x, y, size, color, align = 'left', font = 'monospace') {
-  ctx.save();
-  ctx.font = 'bold ' + size + 'px ' + font;
-  ctx.textAlign = align;
-  ctx.textBaseline = 'middle';
-  ctx.fillStyle = color;
-  ctx.fillText(text, x, y);
-  ctx.restore();
+  // texto pequeno demais para a fonte bitmap: usa a fonte do sistema
+  if (size < 5.5) {
+    ctx.save();
+    ctx.font = 'bold ' + size + 'px ' + font;
+    ctx.textAlign = align;
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = color;
+    ctx.fillText(text, x, y);
+    ctx.restore();
+    return;
+  }
+  const scale = Math.max(1, Math.round(size / 7));
+  drawBitmapText(ctx, text, x, y - (KC_FONT_H * scale) / 2, size, color, { align: align, scale: scale });
 }
 
 function drawOutlinedText(ctx, text, x, y, size, color, outline = '#000', align = 'center', font = 'monospace') {
-  ctx.save();
-  ctx.font = 'bold ' + size + 'px ' + font;
-  ctx.textAlign = align;
-  ctx.textBaseline = 'middle';
-  ctx.lineWidth = Math.max(2, size / 4);
-  ctx.strokeStyle = outline;
-  ctx.strokeText(text, x, y);
-  ctx.fillStyle = color;
-  ctx.fillText(text, x, y);
-  ctx.restore();
+  const scale = Math.max(1, Math.round(size / 7));
+  drawBitmapText(ctx, text, x, y - (KC_FONT_H * scale) / 2, size, color, {
+    align: align,
+    scale: scale,
+    outline: outline
+  });
 }
 
 function hexToRgba(hex, alpha) {

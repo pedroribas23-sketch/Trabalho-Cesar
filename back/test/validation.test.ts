@@ -24,6 +24,27 @@ describe("validation", () => {
     assert.equal(parsed.keys.length, 1);
   });
 
+  it("arredonda o tempo fracionario enviado pelo front", () => {
+    // o front soma dt * 1000 e chega float: precisa ser aceito e normalizado
+    const parsed = saveSchema.parse({
+      stats: { timeMs: 2166.4000000000004, deaths: 0, kills: 0, runs: 0 }
+    });
+    assert.equal(parsed.stats.timeMs, 2166);
+    assert.equal(Number.isInteger(parsed.stats.timeMs), true);
+  });
+
+  it("aceita o save inteiro usado na criacao de conta", () => {
+    const result = createAccountSchema.safeParse({
+      name: "Kennedito",
+      pin: "1234",
+      save: {
+        version: 1,
+        stats: { timeMs: 2166.4, deaths: 0, kills: 0, runs: 0 }
+      }
+    });
+    assert.equal(result.success, true);
+  });
+
   it("preenche campos ausentes com padrões", () => {
     const parsed = saveSchema.parse({});
     assert.equal(parsed.currentRoom, "hub");

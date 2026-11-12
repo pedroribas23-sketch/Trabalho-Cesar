@@ -1,4 +1,4 @@
-# Front — KENNEDITO
+# Front — ESCOLA ABANDONADA
 
 O jogo em si. HTML, CSS e JavaScript puro (ES2020), **sem bibliotecas e sem
 build**. Toda a arte é pixel art procedural desenhada em `<canvas>`; todo o
@@ -8,8 +8,10 @@ build**. Toda a arte é pixel art procedural desenhada em `<canvas>`; todo o
 front/
 ├── index.html      # DOM dos menus + <canvas> 640x360
 ├── css/style.css   # telas, HUD, controles de toque
+├── css/fonts.css   # fonte pixelada (Silkscreen) embutida em base64
 ├── js/
 │   ├── util.js       # clamp, lerp, aabb, texto, cores
+│   ├── pixelfont.js  # fonte bitmap 5x7 desenhada pixel a pixel
 │   ├── audio.js      # música e efeitos procedurais
 │   ├── input.js      # teclado, mouse e toque
 │   ├── config.js     # endereço da API
@@ -23,8 +25,28 @@ front/
 │   └── game.js       # laço principal, save e progressão
 ├── kennedito.html   # o jogo inteiro em um arquivo só (gerado)
 ├── build-single.js  # gera o kennedito.html
+├── build-fonts.js   # gera o css/fonts.css
 └── check-single.js  # confere se o kennedito.html está atualizado
 ```
+
+## Fontes
+
+O jogo usa duas fontes, ambas embutidas (sem CDN, funciona offline):
+
+- **Silkscreen** (CSS) — títulos, legendas e botões. Pixelada e compacta.
+- **Bitmap 5×7** (`js/pixelfont.js`) — todo o texto desenhado no canvas. É
+  desenhado pixel a pixel, então o HUD tem a mesma granulação da arte. Tem
+  acentos do português (Á À Â Ã É Ê Í Ó Ô Õ Ú Ç) e símbolos (— → ✓).
+
+## Combate à distância
+
+| Tecla | Ação |
+| ----- | ---- |
+| `J` / `X` / clique esquerdo | Arremessa um **giz** na direção do cursor (8 direções) |
+| `L` / `V` / clique do meio | Lança o **lápis**, que perfura um inimigo |
+| `K` / `C` / Shift / clique direito | Dash |
+
+O terceiro golpe do combo arremessa um giz maior, com mais dano.
 
 ## Como executar
 

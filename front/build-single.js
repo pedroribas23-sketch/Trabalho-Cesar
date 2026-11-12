@@ -9,6 +9,7 @@ const read = (p) => fs.readFileSync(path.join(FRONT, p), 'utf8');
 
 const JS_ORDER = [
   'js/util.js',
+  'js/pixelfont.js',
   'js/audio.js',
   'js/input.js',
   'js/config.js',
@@ -24,9 +25,10 @@ const JS_ORDER = [
 
 let html = read('index.html');
 const css = read('css/style.css');
+const fonts = read('css/fonts.css');
 
-// remove o link do css
-html = html.replace(/<link rel="stylesheet" href="css\/style\.css">/g, '<style>\n' + css + '\n</style>');
+// remove o import do css de fontes e embute tudo
+html = html.replace(/<link rel="stylesheet" href="css\/style\.css">/g, '<style>\n' + fonts + '\n' + css + '\n</style>');
 
 // remove os scripts externos e injeta o bundle
 html = html.replace(/<script src="js\/[a-z_]+\.js"><\/script>/g, '');

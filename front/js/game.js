@@ -14,7 +14,6 @@ const KC_ABILITY_INFO = {
   warcry: { name: 'GRITO DE GUERRA', hint: 'U — empurre e fere tudo perto' },
   doubleJump: { name: 'PULO DUPLO', hint: 'ESPAÇO novamente no ar' }
 };
-
 const KC_INTRO_PAGES = [
   {
     title: 'A escola mandou uma mensagem.',
@@ -135,7 +134,7 @@ function sanitizeSave(raw) {
     out.settings.volume = clamp(Number(raw.settings.volume) || 0.72, 0, 1);
   }
   if (raw.stats && typeof raw.stats === 'object') {
-    out.stats.timeMs = Math.max(0, Math.min(999999999, Number(raw.stats.timeMs) || 0));
+    out.stats.timeMs = Math.max(0, Math.min(999999999, Math.round(Number(raw.stats.timeMs) || 0)));
     out.stats.deaths = Math.max(0, Math.min(999999, Math.floor(Number(raw.stats.deaths) || 0)));
     out.stats.kills = Math.max(0, Math.min(999999, Math.floor(Number(raw.stats.kills) || 0)));
     out.stats.runs = Math.max(0, Math.min(999999, Math.floor(Number(raw.stats.runs) || 0)));
@@ -257,6 +256,8 @@ class Game {
   saveGame(reason) {
     if (!this.save) return;
     this.save.version = KC_SAVE_VERSION;
+    // a API exige numeros inteiros no save (validacao por Zod)
+    this.save.stats.timeMs = Math.max(0, Math.round(this.save.stats.timeMs || 0));
     if (this.room && ['playing', 'paused', 'bossIntro', 'victory', 'lore', 'dying', 'gameover'].indexOf(this.state) >= 0) {
       this.save.currentRoom = this.roomId;
     }
@@ -795,6 +796,8 @@ class Game {
 
     if (['playing', 'bossIntro', 'victory', 'dying', 'lore'].indexOf(this.state) >= 0) {
       this.save.stats.timeMs += dt * 1000;
+      // o tempo precisa ser inteiro: a API valida com Zod
+      this.save.stats.timeMs = Math.round(this.save.stats.timeMs);
     }
 
     if (this.input && this.input.pausePressed) this.handleHotkeys();
@@ -1206,8 +1209,7 @@ class Game {
     };
     this.ui.setTopVisible(false);
     this.ui.setTouchVisible(false);
-    this.ui.setEnding(this.endingStats, 'A chave girou. O portão abriu. Kennedito atravessou a rua e não olhou para trás. A escola nunca morre. Mas, por enquanto... ela dorme.');
-    this.ui.showScreen('ending');
+    this.ui.setEnding(this.endingStats, 'A chave girou. O portão abriu. Kennedito atravessou a rua e não olhou para trás. A escola nunca morre. Mas, por enquanto... ela dorme.');    this.ui.showScreen('ending');
     if (this.audio) this.audio.startMusic('ending', false);
     this.submitRun();
   }
@@ -1359,41 +1361,6 @@ class Game {
   }
 
   /* ---------------- combate e efeitos ---------------- */
-
-  resolvePlayerAttack(player, box, damage, combo) {
-    if (!player) return;
-    let hitAny = false;
-    if (this.boss && !this.boss.dead && !this.boss.dying && aabb(box, this.boss.box)) {
-      this.boss.takeDamage(damage, player, box.x + box.w / 2, box.y + box.h / 2);
-      hitAny = true;
-    }
-    for (let i = 0; i < this.enemies.length; i++) {
-      const e = this.enemies[i];
-      if (e.dead) continue;
-      if (aabb(box, e.box)) {
-        e.hurt(damage, player);
-        this.spawnHitParticles(e.x, e.y - e.h / 2, '#e9fff2', 6);
-        hitAny = true;
-      }
-    }
-    if (hitAny) {
-      this.shake(2.5, 0.13);
-      if (this.audio) this.audio.sfx('hit');
-      this.hitstop = Math.max(this.hitstop, 0.028);
-    }
-    const cx = player.x + player.facing * (combo === 2 ? 31 : 24);
-    const cy = player.y - (combo === 2 ? 29 : 24);
-    this.particles.push(new Particle({
-      kind: 'slash',
-      x: cx,
-      y: cy,
-      life: 0.18,
-      size: combo === 2 ? 4 : 2.5,
-      color: combo === 2 ? '#fff1ae' : '#b8ffd6',
-      angle: player.facing === 1 ? 0 : Math.PI,
-      additive: true
-    }));
-  }
 
   doWarCry(player) {
     if (!player) return;
@@ -1771,8 +1738,8 @@ class Game {
     if (cardIn > 0) {
       ctx.save();
       ctx.globalAlpha = cardIn;
-      drawOutlinedText(ctx, 'KENNEDITO', GAME_W / 2, 62, 20, '#d9ffe9', '#04100b');
-      drawOutlinedText(ctx, 'A ESCOLA QUE NUNCA MORRE', GAME_W / 2, 84, 9, '#8affc1', '#04100b');
+      drawOutlinedText(ctx, 'ESCOLA', GAME_W / 2, 54, 18, '#d9ffe9', '#04100b');
+      drawOutlinedText(ctx, 'ABANDONADA', GAME_W / 2, 76, 18, '#8affc1', '#04100b');
       ctx.restore();
     }
     if (t > 2 && Math.floor(t * 2) % 2 === 0) {
@@ -1995,6 +1962,8 @@ class Game {
     this.accountBusy = true;
     this.ui.setAccountBusy(true, mode === 'create' ? 'CRIANDO...' : 'ENTRANDO...');
     try {
+      // garante numeros inteiros: a API valida o save com Zod
+      this.save.stats.timeMs = Math.max(0, Math.round(this.save.stats.timeMs || 0));
       let data = null;
       if (mode === 'create') {
         data = await this.api.createAccount({ name: name, pin: pin, save: this.save });

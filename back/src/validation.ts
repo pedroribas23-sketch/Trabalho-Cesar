@@ -23,7 +23,13 @@ export const saveSchema = z
       .default({ muted: false, volume: 0.72 }),
     stats: z
       .object({
-        timeMs: z.number().int().min(0).max(999_999_999).default(0),
+        // o front acumula dt * 1000 e pode chegar fracionario: arredonda
+        timeMs: z
+          .number()
+          .min(0)
+          .max(999_999_999)
+          .transform((value) => Math.round(value))
+          .default(0),
         deaths: z.number().int().min(0).max(999_999).default(0),
         kills: z.number().int().min(0).max(999_999).default(0),
         runs: z.number().int().min(0).max(999_999).default(0)
@@ -72,7 +78,11 @@ export const updateSaveSchema = z
 
 export const runSchema = z
   .object({
-    timeMs: z.number().int().min(1).max(999_999_999),
+    timeMs: z
+      .number()
+      .min(1)
+      .max(999_999_999)
+      .transform((value) => Math.round(value)),
     deaths: z.number().int().min(0).max(999_999).default(0),
     kills: z.number().int().min(0).max(999_999).default(0),
     bosses: z.number().int().min(0).max(10).default(0),

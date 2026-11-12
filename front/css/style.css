@@ -3,6 +3,8 @@
    Interface, telas e controles
    ========================================================= */
 
+@import url("fonts.css");
+
 :root {
   --green: #58ff9d;
   --green-2: #16c46a;
@@ -19,7 +21,7 @@
   --purple: #c77dff;
   --blue: #62c7ff;
   --shadow: 0 18px 70px rgba(0, 0, 0, 0.65);
-  --font: "Lucida Console", "Courier New", Consolas, monospace;
+  --font: "Silkscreen", "Lucida Console", "Courier New", Consolas, monospace;
   --font-ui: "Trebuchet MS", "Segoe UI", sans-serif;
 }
 
@@ -201,23 +203,23 @@ body {
 
 .logo {
   margin: 0;
-  font-family: "Arial Black", Impact, var(--font-ui);
-  font-size: clamp(48px, 9.2vw, 94px);
-  line-height: 0.82;
-  letter-spacing: -0.045em;
+  font-family: "Silkscreen", "Arial Black", Impact, var(--font-ui);
+  font-size: clamp(30px, 6.6vw, 68px);
+  line-height: 1.06;
+  letter-spacing: 0.02em;
   text-transform: uppercase;
   color: #eafff2;
   text-shadow:
     0 0 2px #fff,
     0 0 12px rgba(88, 255, 157, 0.55),
     0 0 34px rgba(22, 196, 106, 0.4),
-    0 8px 0 #063c24,
-    0 12px 24px rgba(0, 0, 0, 0.8);
+    0 6px 0 #063c24,
+    0 10px 24px rgba(0, 0, 0, 0.8);
   transform: skew(-3deg);
   filter: drop-shadow(0 0 16px rgba(88, 255, 157, 0.16));
 }
 
-.logo span { display: inline-block; }
+.logo span { display: block; }
 .logo span:last-child { color: var(--green); }
 
 .subtitle {

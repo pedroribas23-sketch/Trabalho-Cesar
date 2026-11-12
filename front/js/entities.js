@@ -290,7 +290,8 @@ class Player {
     const active = (this.attackIndex === 2 ? (prog > 0.2 && prog < 0.72) : (prog > 0.12 && prog < 0.62));
     if (active && !this.attackHit) {
       this.attackHit = true;
-      this.game.resolvePlayerAttack(this, this.getAttackBox(), [7, 8, 13][this.attackIndex], this.attackIndex);
+      // o ataque base e a distancia: arremessa um giz na direcao da mira
+      this.throwChalk();
     }
     if (this.attackTimer <= 0) {
       this.attackTimer = 0;
@@ -302,6 +303,58 @@ class Player {
         this.startAttack(this.game.input);
       }
     }
+  }
+
+  /* Angulo de mira em radianos: usa o mouse quando houver, senao a direcao do olhar. */
+  getAimAngle(input) {
+    if (input && input.mouseUsed && input.mouseInside) {
+      const wx = this.game.camera.x + input.mouseX;
+      const wy = input.mouseY;
+      const dx = wx - this.x;
+      const dy = wy - (this.y - 24);
+      if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
+        const angle = Math.atan2(dy, dx);
+        this.facing = Math.cos(angle) >= 0 ? 1 : -1;
+        return angle;
+      }
+    }
+    return this.facing === 1 ? 0 : Math.PI;
+  }
+
+  /* Arremesso de giz: o ataque basico do Kennedito. */
+  throwChalk() {
+    const input = this.game.input;
+    const angle = this.getAimAngle(input);
+    const heavy = this.attackIndex === 2;
+    const speed = heavy ? 340 : 400;
+    const life = heavy ? 1.5 : 1.1;
+    const damage = heavy ? 13 : 6;
+    this.game.spawnProjectile({
+      type: 'chalk',
+      owner: 'player',
+      x: this.x + Math.cos(angle) * 16,
+      y: this.y - 24 + Math.sin(angle) * 10,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed,
+      w: 10,
+      h: 10,
+      damage: damage,
+      life: life,
+      angle: angle,
+      spin: heavy ? 14 : 9,
+      gravity: heavy ? 60 : 30,
+      color: '#f5efc0',
+      scale: heavy ? 1.5 : 1
+    });
+    if (this.game.audio) this.game.audio.sfx(heavy ? 'shock' : 'book');
+    this.game.spawnParticles(
+      this.x + Math.cos(angle) * 16,
+      this.y - 24 + Math.sin(angle) * 10,
+      heavy ? 8 : 5,
+      heavy ? '#fff3b0' : '#d9d2a8',
+      'spark'
+    );
+    if (heavy) this.game.shake(2.2, 0.14);
   }
 
   getAttackBox() {
@@ -317,13 +370,10 @@ class Player {
     return worldX > this.x ? 1 : -1;
   }
 
+  /* Lancamento pesado: o lapis da escola, perfura um inimigo. */
   tryBook(input) {
-    if (!this.bookUnlocked) {
-      this.game.toastOnce('book', 'Caderno voador bloqueado. Derrote um chefe de sala.');
-      return;
-    }
     if (this.bookCooldown > 0) return;
-    this.bookCooldown = 0.82;
+    this.bookCooldown = 0.9;
     let angle = 0;
     if (input.mouseUsed && input.mouseInside) {
       const wx = this.game.camera.x + input.mouseX;
@@ -333,25 +383,26 @@ class Player {
     } else {
       angle = this.facing === 1 ? 0 : Math.PI;
     }
-    const speed = 310;
+    const speed = 330;
     this.game.spawnProjectile({
-      type: 'book',
+      type: 'code',
       owner: 'player',
       x: this.x + Math.cos(angle) * 15,
       y: this.y - 25 + Math.sin(angle) * 10,
       vx: Math.cos(angle) * speed,
       vy: Math.sin(angle) * speed,
-      w: 14,
-      h: 10,
-      damage: 7,
-      life: 1.5,
+      w: 16,
+      h: 14,
+      damage: 11,
+      life: 1.6,
       angle: angle,
-      spin: 9,
-      gravity: 40,
-      color: '#f2c45a'
+      spin: 10,
+      gravity: 30,
+      pierce: true,
+      color: '#62c7ff'
     });
-    if (this.game.audio) this.game.audio.sfx('book');
-    this.game.spawnParticles(this.x + this.facing * 14, this.y - 25, 6, '#f2c45a', 'spark');
+    if (this.game.audio) this.game.audio.sfx('laser');
+    this.game.spawnParticles(this.x + this.facing * 14, this.y - 25, 8, '#62c7ff', 'spark');
     this.state = 'attack';
     this.attackIndex = 2;
     this.attackTimer = 0.16;

@@ -207,12 +207,14 @@ const BOSS_KEY_FOR_DOOR = {
 /* Ordem canônica dos chefes: sala5 -> sala6 -> sala7 -> quadra -> lab. */
 const BOSS_ORDER = ['mestre', 'programas', 'feiura', 'esquecido', 'guardiao'];
 
-/* Habilidade liberada por cada chefe derrotado. */
+/* Habilidade liberada por cada chefe derrotado.
+   O ataque a distancia (giz) e o lancamento pesado (lapis) ja vem de graca:
+   as habilidades de chefe viram upgrades de mobility e offense. */
 const BOSS_ABILITY = {
-  mestre: 'book',
-  programas: 'airDash',
-  feiura: 'warcry',
-  esquecido: 'doubleJump',
+  mestre: 'airDash',
+  programas: 'warcry',
+  feiura: 'doubleJump',
+  esquecido: 'book',
   guardiao: null
 };
 

@@ -5,10 +5,29 @@ enfrenta cinco professores e precisa sair vivo — com a chave mestra.
 
 O repositório está dividido em duas partes:
 
-| Pasta  | O que é                                                       |
-| ------ | ------------------------------------------------------------- |
-| `front/` | O jogo (HTML + CSS + JavaScript puro, sem bibliotecas).     |
-| `back/`  | A API de contas, saves e ranking (TypeScript + Postgres).    |
+| Pasta    | O que é                                                    |
+| -------- | ---------------------------------------------------------- |
+| `front/` | **O jogo.** HTML + CSS + JavaScript puro, sem bibliotecas.  |
+| `back/`  | **A API.** Contas, saves na nuvem e ranking (TS + Postgres). |
+
+```
+/
+├── front/          ← o jogo
+│   ├── index.html
+│   ├── css/style.css
+│   ├── js/         (12 arquivos: arte, áudio, entidades, chefes, levels, ui, game)
+│   ├── kennedito.html   ← o jogo inteiro num arquivo só
+│   ├── build-single.js  ← gera o kennedito.html
+│   └── check-single.js  ← confere se o kennedito.html está atualizado
+├── back/           ← a API
+│   ├── src/        (10 arquivos TypeScript)
+│   ├── test/       (15 testes)
+│   ├── sql/001_init.sql
+│   ├── package.json / tsconfig.json / .env.example
+│   └── README.md
+├── render.yaml     ← blueprint do Render (precisa ficar na raiz)
+└── README.md
+```
 
 ## O jogo
 
@@ -34,16 +53,16 @@ que o chefe deixa é a única que destranca a sala seguinte.
 
 **Controles**
 
-| Ação              | Teclado                      | Mouse             | Toque          |
-| ----------------- | ---------------------------- | ----------------- | -------------- |
-| Mover             | A / D ou ← / →               | —                 | Direcional     |
-| Pular             | Espaço / W / ↑               | —                 | ↑              |
-| Atacar            | J / X                        | Botão esquerdo    | A              |
-| Dash              | K / C / Shift                | Botão direito     | D              |
-| Caderno voador    | L / V                        | Botão do meio     | L              |
-| Grito de Guerra   | U                            | —                 | U              |
-| Interagir / ler   | E                            | —                 | —              |
-| Pausar            | Esc / P                      | —                 | —              |
+| Ação            | Teclado             | Mouse             | Toque      |
+| --------------- | ------------------- | ----------------- | ---------- |
+| Mover           | A / D ou ← / →      | —                 | Direcional |
+| Pular           | Espaço / W / ↑      | —                 | ↑          |
+| Atacar          | J / X               | Botão esquerdo    | A          |
+| Dash            | K / C / Shift       | Botão direito     | D          |
+| Caderno voador  | L / V               | Botão do meio     | L          |
+| Grito de Guerra | U                   | —                 | U          |
+| Interagir / ler | E                   | —                 | —          |
+| Pausar          | Esc / P             | —                 | —          |
 
 ## Rodando o front
 
@@ -55,14 +74,22 @@ python -m http.server 8080     # ou: npx serve .
 ```
 
 Abra <http://localhost:8080>. Também dá para abrir o `front/index.html`
-diretamente no navegador.
+diretamente no navegador, ou o `front/kennedito.html` (que tem tudo embutido
+em um único arquivo).
+
+Para regerar o arquivo único depois de mexer no jogo:
+
+```bash
+cd front
+node build-single.js
+```
 
 ## Publicando no GitHub Pages
 
 1. Crie um repositório e suba este conteúdo.
 2. Em **Settings → Pages**, escolha *Deploy from a branch*, branch `main` e
    pasta `/front`.
-3. O jogo fica disponível em `https://<usuario>.github.io/<repositorio>/`.
+3. O jogo fica disponível em `https://<usuario>.github.io/<repositorio>/front/`.
 
 Para apontar o ranking e as contas para a API, edite `front/js/config.js`:
 

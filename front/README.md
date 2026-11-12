@@ -8,19 +8,22 @@ build**. Toda a arte é pixel art procedural desenhada em `<canvas>`; todo o
 front/
 ├── index.html      # DOM dos menus + <canvas> 640x360
 ├── css/style.css   # telas, HUD, controles de toque
-└── js/
-    ├── util.js       # clamp, lerp, aabb, texto, cores
-    ├── audio.js      # música e efeitos procedurais
-    ├── input.js      # teclado, mouse e toque
-    ├── config.js     # endereço da API
-    ├── api.js        # cliente HTTP (contas, saves, ranking)
-    ├── art.js        # sprites de Kennedito, chefes, inimigos
-    ├── world_art.js  # cenários, portas, cutscenes
-    ├── entities.js   # jogador, projéteis, perigos, partículas
-    ├── bosses.js     # padrões de ataque e IA dos chefes
-    ├── levels.js     # salas, portas, chaves e habilidades
-    ├── ui.js         # telas de menu, diário e ranking
-    └── game.js       # laço principal, save e progressão
+├── js/
+│   ├── util.js       # clamp, lerp, aabb, texto, cores
+│   ├── audio.js      # música e efeitos procedurais
+│   ├── input.js      # teclado, mouse e toque
+│   ├── config.js     # endereço da API
+│   ├── api.js        # cliente HTTP (contas, saves, ranking)
+│   ├── art.js        # sprites de Kennedito, chefes, inimigos
+│   ├── world_art.js  # cenários, portas, cutscenes
+│   ├── entities.js   # jogador, projéteis, perigos, partículas
+│   ├── bosses.js     # padrões de ataque e IA dos chefes
+│   ├── levels.js     # salas, portas, chaves e habilidades
+│   ├── ui.js         # telas de menu, diário e ranking
+│   └── game.js       # laço principal, save e progressão
+├── kennedito.html   # o jogo inteiro em um arquivo só (gerado)
+├── build-single.js  # gera o kennedito.html
+└── check-single.js  # confere se o kennedito.html está atualizado
 ```
 
 ## Como executar
@@ -32,6 +35,20 @@ python -m http.server 8080
 
 Ou abra o `index.html` direto no navegador (funciona, mas o `localStorage`
 fica atrelado ao `file://` em alguns navegadores).
+
+## O arquivo único
+
+`kennedito.html` tem todo o jogo embutido em um único arquivo (HTML + CSS + JS),
+sem dependências. Dá para abrir com duplo clique, mandar por e-mail ou subir
+sozinho em qualquer lugar.
+
+Depois de mexer nos arquivos, regere-o:
+
+```bash
+cd front
+node build-single.js      # gera front/kennedito.html
+node check-single.js      # só confere se está atualizado
+```
 
 ## Como está organizado o jogo
 

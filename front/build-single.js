@@ -1,11 +1,11 @@
 /* Gera um único arquivo HTML autocontido com todo o front do Kennedito.
-   Uso: node build-single.js
+   Uso: node build-single.js  (de dentro da pasta front/)
    Saída: front/kennedito.html  (abre com duplo clique, sem servidor) */
 const fs = require('fs');
 const path = require('path');
 
-const ROOT = path.join(__dirname, 'front');
-const read = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
+const FRONT = __dirname;
+const read = (p) => fs.readFileSync(path.join(FRONT, p), 'utf8');
 
 const JS_ORDER = [
   'js/util.js',
@@ -33,7 +33,6 @@ html = html.replace(/<script src="js\/[a-z_]+\.js"><\/script>/g, '');
 const bundle = JS_ORDER.map((f) => '/* ===== ' + f + ' ===== */\n' + read(f)).join('\n');
 html = html.replace('</body>', '<script>\n' + bundle + '\n</script>\n</body>');
 
-// o bundle inline nao deve mais ter o strict de arquivo conflitando
-const out = path.join(ROOT, 'kennedito.html');
+const out = path.join(FRONT, 'kennedito.html');
 fs.writeFileSync(out, html, 'utf8');
 console.log('gerado: ' + out + ' (' + Math.round(html.length / 1024) + ' KB)');

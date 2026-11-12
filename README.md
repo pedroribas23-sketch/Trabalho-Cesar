@@ -1,2 +1,131 @@
-# Trabalho-Cesar
-Um jogo onde você vai explorar uma escola abandona, nela tera 5 bosses para derrotar  
+# Front — KENNEDITO
+
+O jogo em si. HTML, CSS e JavaScript puro (ES2020), **sem bibliotecas e sem
+build**. Toda a arte é pixel art procedural desenhada em `<canvas>`; todo o
+áudio é sintetizado com WebAudio.
+
+```
+front/
+├── index.html      # DOM dos menus + <canvas> 640x360
+├── css/style.css   # telas, HUD, controles de toque
+└── js/
+    ├── util.js       # clamp, lerp, aabb, texto, cores
+    ├── audio.js      # música e efeitos procedurais
+    ├── input.js      # teclado, mouse e toque
+    ├── config.js     # endereço da API
+    ├── api.js        # cliente HTTP (contas, saves, ranking)
+    ├── art.js        # sprites de Kennedito, chefes, inimigos
+    ├── world_art.js  # cenários, portas, cutscenes
+    ├── entities.js   # jogador, projéteis, perigos, partículas
+    ├── bosses.js     # padrões de ataque e IA dos chefes
+    ├── levels.js     # salas, portas, chaves e habilidades
+    ├── ui.js         # telas de menu, diário e ranking
+    └── game.js       # laço principal, save e progressão
+```
+
+## Como executar
+
+```bash
+cd front
+python -m http.server 8080
+```
+
+Ou abra o `index.html` direto no navegador (funciona, mas o `localStorage`
+fica atrelado ao `file://` em alguns navegadores).
+
+## Como está organizado o jogo
+
+### Estados (`game.js`)
+
+| Estado         | O que acontece                                                   |
+| -------------- | ---------------------------------------------------------------- |
+| `title`        | Menu principal sobre a cena do portão.                           |
+| `intro`        | Três telas de prólogo em DOM.                                    |
+| `entrance`     | Cutscene de entrada na escola.                                   |
+| `playing`      | Jogo normal.                                                     |
+| `bossEntry`    | Cutscene ao cruzar a porta de uma sala de chefe.                 |
+| `bossIntro`    | Retrato do chefe + falas antes da luta.                          |
+| `victory`      | Tela de vitória; a chave cai no chão.                            |
+| `lore`         | Página do diário aberta.                                         |
+| `dying`        | Morte → tela de game over.                                       |
+| `paused`       | Menu de pausa.                                                   |
+| `cutscene`     | Cutscene final (chave mestra no portão).                         |
+| `ending`       | Tela de final com estatísticas e ranking.                        |
+
+### Progressão das chaves
+
+`levels.js` guarda a ordem canônica dos chefes em `BOSS_ORDER` e a habilidade
+que cada um libera em `BOSS_ABILITY`. Uma porta fica trancada enquanto o
+jogador não tiver a chave do chefe anterior:
+
+```js
+// levels.js
+{ id: 'sala2', room: 'sala2', x: 980, requires: 'mestre' }
+```
+
+`game.getDoorState(door)` devolve `locked`, `available` ou `cleared`, e
+`game.hasKey(bossId)` consulta o array `save.keys`.
+
+A chave **cai no chão** quando o chefe morre: o jogador precisa passar por
+cima dela (`game.onKeyPicked`) antes de a porta seguinte destrancar.
+
+### Save
+
+`localStorage` na chave `kennedito.save.v1`, sanitizado por `sanitizeSave()`:
+
+```js
+{
+  version, introSeen, currentRoom, maxHearts,
+  bossesDefeated: ['mestre'],       // chefes vencidos
+  keys: ['mestre'],                 // chaves recolhidas no chão
+  abilities: ['book'],
+  lore: ['hub_ata'],
+  settings: { muted, volume },
+  stats: { timeMs, deaths, kills, runs },
+  endingsSeen, finalCutsceneSeen, lastSavedAt
+}
+```
+
+Com conta na nuvem, o save é sincronizado com `PUT /api/me/save` e, em conflito,
+**vence o mais recente** (`lastSavedAt`).
+
+### Cutscenes
+
+| Função (em `world_art.js`)      | Quando roda                        |
+| ------------------------------- | ---------------------------------- |
+| `drawGateScene(ctx, t, 'title')` | Menu principal                   |
+| `drawEntranceScene(ctx, t)`      | Entrada na escola (após o prólogo) |
+| `drawBossEntryScene(ctx, t, ...)` | Chegada à sala de chefe           |
+| `drawGateScene(ctx, t, 'cutscene')` | Final: a chave mestra no portão  |
+
+As legendas ficam em `game.js` (`KC_ENTRANCE_LINES` e `KC_FINAL_LINES`), com
+início e fim em segundos.
+
+## Nuvem (opcional)
+
+`js/config.js`:
+
+```js
+window.KC_CONFIG = {
+  apiBase: "https://sua-api.onrender.com",
+  localApiBase: "http://localhost:3001",
+  requestTimeoutMs: 8500
+};
+```
+
+Também dá para apontar a API pela URL, sem mexer no arquivo:
+
+```
+http://localhost:8080/?api=http://127.0.0.1:3001
+```
+
+Sem API configurada o jogo continua funcionando: o botão de conta mostra
+"Servidor indisponível" e o progresso fica só no dispositivo.
+
+## Ajustes
+
+- **Resolução:** o canvas é fixo em 640×360 e escalado por CSS
+  (`image-rendering: crisp-edges`).
+- **Controles de toque** aparecem sozinhos em telas com toque.
+- **Áudio:** só inicia depois do primeiro clique/tecla, como exigem os
+  navegadores modernos.

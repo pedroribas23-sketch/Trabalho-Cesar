@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <meta name="theme-color" content="#050b08">
+  <title>Kennedito: A Escola Que Nunca Morre</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23071a12'/%3E%3Ccircle cx='16' cy='13' r='7' fill='%2358ff9d'/%3E%3Cellipse cx='16' cy='13' rx='9' ry='3' fill='%232ea96e'/%3E%3Ccircle cx='13' cy='12' r='1.6' fill='%23071a12'/%3E%3Ccircle cx='19' cy='12' r='1.6' fill='%23071a12'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="app">
+    <div id="stage">
+      <canvas id="game" width="640" height="360" aria-label="Jogo do Kennedito"></canvas>
+      <div id="crt" aria-hidden="true"></div>
+
+      <div id="top-controls" class="hidden">
+        <button id="cloud-badge" class="cloud-badge" type="button" title="Conta na nuvem">LOCAL</button>
+        <button id="pause-btn" class="icon-btn" type="button" title="Pausar (Esc)">II</button>
+      </div>
+
+      <div id="touch-controls" class="hidden" aria-hidden="true">
+        <div class="touch-dpad">
+          <button class="touch-btn dir" type="button" data-action="left" aria-label="Esquerda">◀</button>
+          <button class="touch-btn dir" type="button" data-action="right" aria-label="Direita">▶</button>
+        </div>
+        <div class="touch-actions">
+          <button class="touch-btn tiny" type="button" data-action="book" aria-label="Caderno">L</button>
+          <button class="touch-btn tiny" type="button" data-action="special" aria-label="Grito">U</button>
+          <button class="touch-btn atk" type="button" data-action="attack" aria-label="Atacar">A</button>
+          <button class="touch-btn dash" type="button" data-action="dash" aria-label="Dash">D</button>
+          <button class="touch-btn jump" type="button" data-action="jump" aria-label="Pular">↑</button>
+        </div>
+      </div>
+
+      <div id="screens">
+        <section id="screen-title" class="screen active">
+          <div class="title-wrap">
+            <div class="kicker">UM JOGO DE TERROR ESCOLAR</div>
+            <h1 class="logo"><span>KENNE</span><span>DITO</span></h1>
+            <div class="subtitle">A ESCOLA QUE NUNCA MORRE</div>
+            <div class="menu" id="title-menu">
+              <button id="btn-continue" class="btn primary hidden" type="button">Continuar</button>
+              <button id="btn-new" class="btn primary" type="button">Novo jogo</button>
+              <button id="btn-ranking" class="btn" type="button">Ranking</button>
+              <button id="btn-controls" class="btn" type="button">Controles</button>
+              <button id="btn-account" class="btn" type="button">Conta / Nuvem</button>
+              <button id="btn-sound" class="btn" type="button">Som: Ligado</button>
+            </div>
+            <div class="footnote">WASD / setas · Espaço pula · J ataca · K dash · L caderno</div>
+            <div class="version">v1.0 · CEPK</div>
+          </div>
+        </section>
+
+        <section id="screen-intro" class="screen">
+          <div class="panel story-panel">
+            <div class="kicker">CEPK · 23:47</div>
+            <h2 id="intro-title">A escola mandou uma mensagem.</h2>
+            <p id="intro-text">“A escola nunca morre. Volte sozinho.”</p>
+            <div class="story-actions">
+              <button id="btn-intro-next" class="btn primary" type="button">Entrar na escola</button>
+              <button id="btn-intro-skip" class="btn ghost" type="button">Pular introdução</button>
+            </div>
+          </div>
+        </section>
+
+        <section id="screen-pause" class="screen">
+          <div class="panel">
+            <div class="kicker">INTERVALO</div>
+            <h2>Pausa</h2>
+            <div class="menu">
+              <button id="btn-resume" class="btn primary" type="button">Continuar</button>
+              <button id="btn-pause-controls" class="btn" type="button">Controles</button>
+              <button id="btn-pause-journal" class="btn" type="button">Diário</button>
+              <button id="btn-pause-ranking" class="btn" type="button">Ranking</button>
+              <button id="btn-pause-account" class="btn" type="button">Conta / Nuvem</button>
+              <button id="btn-restart-room" class="btn ghost" type="button">Reiniciar sala</button>
+              <button id="btn-quit" class="btn ghost" type="button">Sair para o título</button>
+            </div>
+            <p class="hint">O progresso é salvo automaticamente.</p>
+          </div>
+        </section>
+
+        <section id="screen-controls" class="screen">
+          <div class="panel wide">
+            <div class="kicker">MANUAL DO ALUNO</div>
+            <h2>Controles</h2>
+            <div class="controls-grid">
+              <div>
+                <h3>Teclado</h3>
+                <p><b>A / D</b> ou <b>← / →</b> — mover</p>
+                <p><b>Espaço / W / ↑</b> — pular</p>
+                <p><b>J / X</b> — atacar</p>
+                <p><b>K / C / Shift</b> — dash</p>
+                <p><b>L / V</b> — caderno voador</p>
+                <p><b>U</b> — grito de guerra</p>
+                <p><b>E / Enter</b> — interagir / avançar</p>
+                <p><b>Esc / P</b> — pausar</p>
+              </div>
+              <div>
+                <h3>Mouse</h3>
+                <p><b>Clique esquerdo</b> — atacar na direção do cursor</p>
+                <p><b>Clique direito</b> — dash</p>
+                <p><b>Clique do meio</b> — caderno voador mirado</p>
+                <p>Os menus também funcionam por clique.</p>
+                <h3>Celular</h3>
+                <p>Use o direcional e os botões na tela. Jogue na horizontal.</p>
+              </div>
+            </div>
+            <div class="row">
+              <button id="btn-controls-close" class="btn primary" type="button">Voltar</button>
+            </div>
+          </div>
+        </section>
+
+        <section id="screen-account" class="screen">
+          <div class="panel wide account-panel">
+            <div class="kicker">NUVEM DA ESCOLA</div>
+            <h2>Conta</h2>
+            <div id="account-status" class="status-line">Você está jogando como visitante. O progresso fica neste dispositivo.</div>
+            <div class="tabs">
+              <button id="tab-login" class="tab active" type="button">Entrar</button>
+              <button id="tab-create" class="tab" type="button">Criar conta</button>
+            </div>
+            <form id="account-form" autocomplete="off">
+              <label>Apelido
+                <input id="account-name" type="text" minlength="3" maxlength="18" placeholder="Ex.: Kennedito" required>
+              </label>
+              <label>PIN de 4 dígitos
+                <input id="account-pin" type="password" inputmode="numeric" pattern="[0-9]{4}" minlength="4" maxlength="4" placeholder="••••" required>
+              </label>
+              <div class="row">
+                <button id="btn-account-submit" class="btn primary" type="submit">Entrar</button>
+                <button id="btn-account-close" class="btn ghost" type="button">Voltar</button>
+              </div>
+            </form>
+            <div id="account-logged" class="account-logged hidden">
+              <div id="account-name-display" class="status-line"></div>
+              <div class="row">
+                <button id="btn-sync" class="btn" type="button">Sincronizar agora</button>
+                <button id="btn-logout" class="btn ghost" type="button">Sair da conta</button>
+                <button id="btn-account-close-2" class="btn primary" type="button">Voltar ao jogo</button>
+              </div>
+            </div>
+            <p class="hint">A conta é opcional. Sem internet, o jogo continua salvando localmente.</p>
+          </div>
+        </section>
+
+        <section id="screen-ranking" class="screen">
+          <div class="panel wide">
+            <div class="kicker">MELHORES TEMPOS</div>
+            <h2>Ranking</h2>
+            <div id="ranking-status" class="status-line">Carregando...</div>
+            <ol id="ranking-list" class="ranking-list"></ol>
+            <div class="row">
+              <button id="btn-ranking-refresh" class="btn" type="button">Atualizar</button>
+              <button id="btn-ranking-close" class="btn primary" type="button">Voltar</button>
+            </div>
+          </div>
+        </section>
+
+        <section id="screen-journal" class="screen">
+          <div class="panel wide">
+            <div class="kicker">O QUE FICOU PARA TRÁS</div>
+            <h2>Diário</h2>
+            <div id="journal-list" class="journal-list"></div>
+            <div class="row">
+              <button id="btn-journal-close" class="btn primary" type="button">Voltar</button>
+            </div>
+          </div>
+        </section>
+
+        <section id="screen-gameover" class="screen">
+          <div class="panel">
+            <div class="kicker danger">A ESCOLA VENCEU</div>
+            <h2>Você caiu.</h2>
+            <p class="status-line">O corredor ainda está esperando. Tente de novo.</p>
+            <div class="menu">
+              <button id="btn-retry" class="btn primary" type="button">Tentar de novo</button>
+              <button id="btn-gameover-hub" class="btn" type="button">Voltar ao corredor</button>
+            </div>
+          </div>
+        </section>
+
+        <section id="screen-ending" class="screen">
+          <div class="panel wide ending-panel">
+            <div class="kicker">FIM</div>
+            <h2>A escola nunca morre.</h2>
+            <p id="ending-text" class="status-line">Mas, por enquanto... ela dorme.</p>
+            <div id="ending-stats" class="ending-stats"></div>
+            <div class="row">
+              <button id="btn-ending-ranking" class="btn" type="button">Ver ranking</button>
+              <button id="btn-ending-title" class="btn primary" type="button">Voltar ao título</button>
+            </div>
+          </div>
+        </section>
+
+        <section id="screen-confirm" class="screen">
+          <div class="panel">
+            <div class="kicker danger">ATENÇÃO</div>
+            <h2 id="confirm-title">Apagar o progresso?</h2>
+            <p id="confirm-text" class="status-line">Todo o save local será substituído.</p>
+            <div class="row">
+              <button id="btn-confirm-yes" class="btn primary" type="button">Sim</button>
+              <button id="btn-confirm-no" class="btn ghost" type="button">Cancelar</button>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div id="toast" class="toast hidden"></div>
+      <div id="rotate" class="rotate hidden">Gire o celular para jogar</div>
+    </div>
+  </div>
+
+  <script src="js/util.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/input.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/art.js"></script>
+  <script src="js/world_art.js"></script>
+  <script src="js/entities.js"></script>
+  <script src="js/bosses.js"></script>
+  <script src="js/levels.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/game.js"></script>
+</body>
+</html>

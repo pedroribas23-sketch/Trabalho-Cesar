@@ -1,0 +1,56 @@
+name: Publicar o jogo no GitHub Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'front/**'
+      - '.github/workflows/pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar o código
+        uses: actions/checkout@v4
+
+      - name: Preparar o front
+        run: |
+          rm -rf _site
+          mkdir -p _site
+          # o jogo vive em front/ (index.html, css/, js/ e kennedito.html)
+          cp -r front/. _site/
+          # a raiz do site tambem responde, redirecionando para o jogo
+          cp index.html _site/index.html
+          # se front/index.html existir, ele e o index real do site
+          cp front/index.html _site/index.html
+          ls -la _site
+
+      - name: Configurar o Pages
+        uses: actions/configure-pages@v5
+
+      - name: Publicar
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Publicar no GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

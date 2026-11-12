@@ -50,6 +50,19 @@ que o chefe deixa é a única que destranca a sala seguinte.
 **giz** na direção do cursor, em 8 direções. O `L`/`V` lança o **lápis**
 perfurante. O `K`/Shift dá dash.
 
+**Dificuldade:** escolha no menu principal (também dá para mudar na pausa).
+A dificuldade vale para a partida inteira e fica salva na nuvem.
+
+|              | Corações | Inimigos           | Chefes            | Dano do jogador |
+| ------------ | -------- | ------------------ | ----------------- | --------------- |
+| **FÁCIL**    | 9        | 70% de vida, 15% mais lentos | 70% de vida, 15% mais lentos | +25% |
+| **NORMAL**  | 6        | balanceamento original      | balanceamento original      | original        |
+| **DIFÍCIL** | 4        | 140% de vida, 20% mais rápidos | 145% de vida, 20% mais rápidos | −20% |
+
+Cada chefe derrotado dá +1 coração (até o teto da dificuldade). Durante a
+partida só dá para **aumentar** a dificuldade — assim ninguém troca para
+fácil no meio do jogo para encher a barra de corações.
+
 **Cutscenes**
 
 - **Entrada** — ao começar a jornada, Kennedito chega na chuva, a chave enferrujada

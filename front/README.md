@@ -12,6 +12,7 @@ front/
 ├── js/
 │   ├── util.js       # clamp, lerp, aabb, texto, cores
 │   ├── pixelfont.js  # fonte bitmap 5x7 desenhada pixel a pixel
+│   ├── difficulty.js # dificuldades (corações, inimigos, chefes)
 │   ├── audio.js      # música e efeitos procedurais
 │   ├── input.js      # teclado, mouse e toque
 │   ├── config.js     # endereço da API
@@ -47,6 +48,17 @@ O jogo usa duas fontes, ambas embutidas (sem CDN, funciona offline):
 | `K` / `C` / Shift / clique direito | Dash |
 
 O terceiro golpe do combo arremessa um giz maior, com mais dano.
+
+## Dificuldade
+
+O menu **Dificuldade** (no título e na pausa) escolhe entre três níveis:
+`facil`, `normal` e `dificil`. Tudo em `js/difficulty.js`.
+
+A escolha muda os corações, a vida e a velocidade dos inimigos, a vida e a
+agressividade dos chefes e o dano do Kennedito. Ela fica em
+`save.settings.difficulty` (e vai para a nuvem).
+
+Se o save chegar com uma dificuldade desconhecida, o jogo assume `normal`.
 
 ## Como executar
 

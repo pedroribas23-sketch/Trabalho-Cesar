@@ -328,7 +328,7 @@ class Player {
     const heavy = this.attackIndex === 2;
     const speed = heavy ? 340 : 400;
     const life = heavy ? 1.5 : 1.1;
-    const damage = heavy ? 13 : 6;
+    const damage = difficultyPlayerDamage(this.game.difficultyId, heavy ? 13 : 6);
     this.game.spawnProjectile({
       type: 'chalk',
       owner: 'player',
@@ -393,7 +393,7 @@ class Player {
       vy: Math.sin(angle) * speed,
       w: 16,
       h: 14,
-      damage: 11,
+      damage: difficultyPlayerDamage(this.game.difficultyId, 11),
       life: 1.6,
       angle: angle,
       spin: 10,
@@ -701,7 +701,10 @@ class Enemy {
     this.baseY = y;
     this.w = this.type === 'bug' ? 18 : 18;
     this.h = this.type === 'bug' ? 14 : 26;
-    this.hp = this.type === 'spectral' ? 4 : (this.type === 'bug' ? 2 : 3);
+    // a dificuldade mexe na vida e na velocidade dos inimigos
+    const diff = difficultyDef(game ? game.difficultyId : DIFFICULTY_DEFAULT);
+    const baseHp = this.type === 'spectral' ? 4 : (this.type === 'bug' ? 2 : 3);
+    this.hp = Math.max(1, Math.round(baseHp * diff.enemyHp));
     this.maxHp = this.hp;
     this.vx = 0;
     this.vy = 0;
@@ -709,7 +712,8 @@ class Enemy {
     this.dead = false;
     this.flash = 0;
     this.t = Math.random() * 10;
-    this.speed = this.type === 'bug' ? 62 : (this.type === 'spectral' ? 50 : 38);
+    const baseSpeed = this.type === 'bug' ? 62 : (this.type === 'spectral' ? 50 : 38);
+    this.speed = baseSpeed * diff.enemySpeed;
     this.contactCooldown = 0;
     this.phase = o.phase || 0;
     this.scale = o.scale || 1;

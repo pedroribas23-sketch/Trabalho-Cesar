@@ -32,6 +32,7 @@ CREATE TABLE IF NOT EXISTS runs (
   kills integer NOT NULL DEFAULT 0,
   bosses integer NOT NULL DEFAULT 0,
   lore integer NOT NULL DEFAULT 0,
+  difficulty text NOT NULL DEFAULT 'normal',
   completed_at timestamptz NOT NULL DEFAULT now(),
   created_at timestamptz NOT NULL DEFAULT now()
 );
@@ -39,3 +40,9 @@ CREATE TABLE IF NOT EXISTS runs (
 CREATE INDEX IF NOT EXISTS runs_account_id_idx ON runs (account_id);
 CREATE INDEX IF NOT EXISTS runs_time_ms_idx ON runs (time_ms);
 `;
+
+/* Migrações para bancos que já existem: o CREATE TABLE IF NOT EXISTS acima
+   não muda tabela antiga, então as colunas novas entram aqui. */
+export const MIGRATIONS_SQL: string[] = [
+  `ALTER TABLE runs ADD COLUMN IF NOT EXISTS difficulty text NOT NULL DEFAULT 'normal'`
+];

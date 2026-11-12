@@ -186,11 +186,21 @@ O save é salvo como `jsonb` e validado com zod em `validation.ts`:
   keys: string[],             // chaves recolhidas
   abilities: string[],
   lore: string[],
-  settings: { muted, volume },
+  settings: { muted, volume, difficulty },   // difficulty: 'facil' | 'normal' | 'dificil'
   stats: { timeMs, deaths, kills, runs },
   endingsSeen, finalCutsceneSeen, lastSavedAt
 }
 ```
+
+Uma dificuldade desconhecida (save antigo ou cliente desatualizado) vira
+`normal` em vez de reprovar o save inteiro.
+
+## Ranking e dificuldade
+
+Cada corrida enviada para `/api/runs` guarda a dificuldade em
+`runs.difficulty` (`facil`, `normal` ou `dificil`), e a leaderboard devolve
+o valor junto com o tempo — assim dá para ver em que dificuldade cada tempo
+foi feito.
 
 ## Segurança
 

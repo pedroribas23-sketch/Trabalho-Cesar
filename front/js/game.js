@@ -58,7 +58,7 @@ function defaultSave() {
     keys: [],
     abilities: [],
     lore: [],
-    settings: { muted: false, volume: 0.72 },
+    settings: { muted: false, volume: 0.72, difficulty: DIFFICULTY_DEFAULT },
     stats: { timeMs: 0, deaths: 0, kills: 0, runs: 0 },
     endingsSeen: 0,
     finalCutsceneSeen: false,
@@ -119,8 +119,22 @@ function sanitizeSave(raw) {
     });
   }
 
-  out.maxHearts = clamp(Number(raw.maxHearts) || (6 + out.bossesDefeated.length), 6, 11);
-  out.maxHearts = Math.max(out.maxHearts, 6 + out.bossesDefeated.length);
+  if (raw.settings && typeof raw.settings === 'object') {
+    out.settings.muted = !!raw.settings.muted;
+    out.settings.volume = clamp(Number(raw.settings.volume) || 0.72, 0, 1);
+    out.settings.difficulty = difficultyId(raw.settings.difficulty);
+  }
+
+  // os corações dependem da dificuldade: a base muda e o teto também
+  const baseHearts = difficultyBaseHearts(out.settings.difficulty);
+  const capHearts = difficultyMaxHearts(out.settings.difficulty);
+  const earned = baseHearts + out.bossesDefeated.length;
+  out.maxHearts = clamp(
+    Number(raw.maxHearts) || earned,
+    Math.min(baseHearts, capHearts),
+    capHearts
+  );
+  out.maxHearts = Math.min(Math.max(out.maxHearts, earned), capHearts);
 
   let roomId = String(raw.currentRoom || 'hub');
   if (!ROOMS[roomId]) roomId = 'hub';
@@ -129,10 +143,6 @@ function sanitizeSave(raw) {
   }
   out.currentRoom = roomId;
 
-  if (raw.settings && typeof raw.settings === 'object') {
-    out.settings.muted = !!raw.settings.muted;
-    out.settings.volume = clamp(Number(raw.settings.volume) || 0.72, 0, 1);
-  }
   if (raw.stats && typeof raw.stats === 'object') {
     out.stats.timeMs = Math.max(0, Math.min(999999999, Math.round(Number(raw.stats.timeMs) || 0)));
     out.stats.deaths = Math.max(0, Math.min(999999, Math.floor(Number(raw.stats.deaths) || 0)));
@@ -319,10 +329,60 @@ class Game {
   }
 
   applySettings() {
-    if (!this.audio || !this.save) return;
+    if (!this.save) return;
+    this.applyDifficulty();
+    if (!this.audio) return;
     this.audio.setMuted(!!this.save.settings.muted);
     this.audio.setVolume(this.save.settings.volume);
     if (this.ui) this.ui.setSound(!!this.save.settings.muted);
+  }
+
+  /* A dificuldade fica no save: ela vale para a partida inteira e
+     vai para a nuvem junto com o resto do progresso. */
+  applyDifficulty() {
+    if (!this.save) return;
+    const id = difficultyId(this.save.settings.difficulty);
+    this.difficulty = difficultyDef(id);
+    this.difficultyId = id;
+    if (this.player) this.player.syncAbilities();
+    if (this.ui) this.ui.setDifficulty(id);
+  }
+
+  setDifficulty(id) {
+    if (!this.save) return;
+    const next = difficultyId(id);
+    const nextMax = Math.min(
+      difficultyBaseHearts(next) + this.save.bossesDefeated.length,
+      difficultyMaxHearts(next)
+    );
+    // no meio da partida só dá para aumentar a dificuldade: assim
+    // ninguém troca para fácil para encher a barra de corações
+    const inRun = this.state !== 'title' && this.state !== 'intro';
+    if (inRun && nextMax > this.save.maxHearts) {
+      this.ui.setDifficulty(this.save.settings.difficulty);
+      this.toast('Durante a partida só dá para aumentar a dificuldade.', 3400);
+      return;
+    }
+    this.save.settings.difficulty = next;
+    this.save.maxHearts = nextMax;
+    this.applyDifficulty();
+    if (this.player) {
+      this.player.hp = Math.min(this.player.hp, this.player.maxHp);
+      this.player.syncAbilities();
+    }
+    this.saveGame('difficulty');
+    this.toast('Dificuldade: ' + this.difficulty.name + ' · ' + this.difficulty.tag, 2800);
+  }
+
+  openDifficulty(from) {
+    this.overlayReturn = from || 'title';
+    this.ui.showScreen('difficulty');
+    this.ui.setDifficulty(this.save ? this.save.settings.difficulty : DIFFICULTY_DEFAULT);
+  }
+
+  closeDifficulty() {
+    const back = this.overlayReturn || 'title';
+    this.ui.showScreen(back === 'pause' ? 'pause' : (back === 'ending' ? 'ending' : 'title'));
   }
 
   progressScore(save) {
@@ -361,6 +421,9 @@ class Game {
       openRanking: (from) => this.openRanking(from),
       refreshRanking: () => this.refreshRanking(),
       openControls: (from) => this.openControls(from),
+      openDifficulty: (from) => this.openDifficulty(from),
+      closeDifficulty: () => this.closeDifficulty(),
+      setDifficulty: (id) => this.setDifficulty(id),
       openJournal: () => this.openJournal(),
       openAccount: (from) => this.openAccount(from),
       closeAccount: () => this.closeAccount(),
@@ -448,9 +511,13 @@ class Game {
   startNewGame() {
     const muted = !!this.save.settings.muted;
     const volume = this.save.settings.volume;
+    const difficulty = difficultyId(this.save.settings.difficulty);
     this.save = defaultSave();
     this.save.settings.muted = muted;
     this.save.settings.volume = volume;
+    this.save.settings.difficulty = difficulty;
+    this.save.maxHearts = difficultyBaseHearts(difficulty);
+    this.applyDifficulty();
     this.save.introSeen = false;
     this.save.lastSavedAt = Date.now();
     this.autosaveTimer = 0;
@@ -1054,7 +1121,10 @@ class Game {
     let ability = null;
     if (firstTime) {
       this.save.bossesDefeated.push(boss.id);
-      this.save.maxHearts = Math.min(11, this.save.maxHearts + 1);
+      this.save.maxHearts = Math.min(
+        difficultyMaxHearts(this.save.settings.difficulty),
+        this.save.maxHearts + 1
+      );
       ability = (typeof BOSS_ABILITY !== 'undefined') ? BOSS_ABILITY[boss.id] : null;
       if (ability) this.unlockAbility(ability);
     }
@@ -1205,7 +1275,8 @@ class Game {
       kills: this.save.stats.kills,
       bosses: this.save.bossesDefeated.length,
       keys: Math.min(5, this.save.bossesDefeated.length),
-      lore: this.save.lore.length
+      lore: this.save.lore.length,
+      difficulty: this.save.settings.difficulty
     };
     this.ui.setTopVisible(false);
     this.ui.setTouchVisible(false);
@@ -1217,28 +1288,6 @@ class Game {
   endingToTitle() {
     this.saveGame('endingTitle');
     this.goTitle();
-  }
-
-  submitRun() {
-    if (this.runSubmitted) return;
-    this.runSubmitted = true;
-    const payload = {
-      timeMs: Math.max(1, Math.round(this.save.stats.timeMs)),
-      deaths: Math.max(0, Math.round(this.save.stats.deaths)),
-      kills: Math.max(0, Math.round(this.save.stats.kills)),
-      bosses: this.save.bossesDefeated.length,
-      lore: this.save.lore.length,
-      completedAt: new Date().toISOString()
-    };
-    if (!this.api || !this.api.token || !this.api.base) {
-      this.toast('Tempo salvo localmente. Entre em uma conta para enviar ao ranking.', 3600);
-      return;
-    }
-    this.api.submitRun(payload).then(() => {
-      this.toast('Tempo enviado ao ranking da CEPK.', 2800);
-    }).catch(() => {
-      this.toast('Ranking indisponível. Seu tempo ficou salvo localmente.', 3200);
-    });
   }
 
   /* ---------------- morte, pausa e diário ---------------- */
@@ -1370,15 +1419,17 @@ class Game {
     this.hazards = [];
     this.spawnParticles(player.x, player.y - 24, 26, '#f2c45a', 'ring');
     this.spawnParticles(player.x, player.y - 24, 22, '#58ff9d', 'spark');
+    const warcryDamage = difficultyPlayerDamage(this.difficultyId, 18);
+    const warcryBossDamage = difficultyPlayerDamage(this.difficultyId, 20);
     for (let i = 0; i < this.enemies.length; i++) {
       const e = this.enemies[i];
       if (!e.dead && dist(e.x, e.y - e.h / 2, player.x, player.y - 20) < 190) {
-        e.hurt(18, player);
+        e.hurt(warcryDamage, player);
       }
     }
     if (this.boss && !this.boss.dead && !this.boss.dying &&
         dist(this.boss.x, this.boss.y - this.boss.h / 2, player.x, player.y - 20) < 220) {
-      this.boss.takeDamage(20, player, this.boss.x, this.boss.y - 40);
+      this.boss.takeDamage(warcryBossDamage, player, this.boss.x, this.boss.y - 40);
     }
     this.toast('GRITO DE GUERRA!', 1300);
   }
@@ -1639,6 +1690,22 @@ class Game {
     });
     // tempo
     drawOutlinedText(ctx, fmtTimeMs(this.save.stats.timeMs), GAME_W - 14, 39, 8, '#9fd8bd', '#07110b', 'right');
+
+    // dificuldade da partida (canto superior direito)
+    const diff = difficultyDef(this.save.settings.difficulty);
+    ctx.save();
+    ctx.globalAlpha = 0.8;
+    drawOutlinedText(
+      ctx,
+      diff.name,
+      GAME_W - 14,
+      19,
+      7,
+      diff.id === 'dificil' ? '#ff9a9a' : (diff.id === 'facil' ? '#9dffc8' : '#7fbf9d'),
+      '#07110b',
+      'right'
+    );
+    ctx.restore();
 
     // objetivo atual
     const objective = this.currentObjective();
@@ -2036,7 +2103,7 @@ class Game {
   async refreshRanking() {
     const local = this.loadLocalRuns();
     let entries = local.map(function (r, i) {
-      return { rank: i + 1, name: r.name, timeMs: r.timeMs, deaths: r.deaths };
+      return { rank: i + 1, name: r.name, timeMs: r.timeMs, deaths: r.deaths, difficulty: r.difficulty };
     });
     if (this.api && this.api.enabled) {
       try {
@@ -2047,7 +2114,8 @@ class Game {
             rank: r.rank || i + 1,
             name: r.name || '???',
             timeMs: Number(r.timeMs != null ? r.timeMs : (r.time_ms || 0)),
-            deaths: Number(r.deaths || 0)
+            deaths: Number(r.deaths || 0),
+            difficulty: r.difficulty || 'normal'
           };
         });
         entries = remote.concat(entries);
@@ -2117,6 +2185,7 @@ class Game {
       kills: Math.max(0, Math.round(this.save.stats.kills)),
       bosses: this.save.bossesDefeated.length,
       lore: this.save.lore.length,
+      difficulty: this.save.settings.difficulty,
       completedAt: new Date().toISOString()
     };
     const local = this.loadLocalRuns();
@@ -2124,7 +2193,8 @@ class Game {
       id: Date.now(),
       name: (this.api && this.api.account && this.api.account.name) || 'Visitante',
       timeMs: payload.timeMs,
-      deaths: payload.deaths
+      deaths: payload.deaths,
+      difficulty: payload.difficulty
     });
     local.sort(function (a, b) { return a.timeMs - b.timeMs; });
     this.saveLocalRuns(local.slice(0, 50));

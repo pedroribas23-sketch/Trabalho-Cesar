@@ -529,6 +529,84 @@ input::placeholder { color: rgba(131, 168, 150, 0.5); }
 .controls-grid p { margin: 5px 0; font-size: clamp(10px, 1.35vw, 12px); }
 .controls-grid h3 { margin-top: 0; }
 
+/* ---------------- dificuldade ---------------- */
+
+.difficulty-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin: 16px 0 6px;
+}
+
+.diff-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-start;
+  text-align: left;
+  padding: 14px 13px;
+  border: 1px solid rgba(88, 255, 157, 0.22);
+  border-radius: 4px;
+  background: linear-gradient(180deg, rgba(9, 24, 18, 0.9), rgba(4, 12, 9, 0.9));
+  color: var(--text);
+  cursor: pointer;
+  font-family: var(--font-ui);
+  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.diff-card:hover,
+.diff-card:focus-visible {
+  transform: translateY(-2px);
+  border-color: rgba(88, 255, 157, 0.6);
+  box-shadow: 0 0 22px rgba(22, 196, 106, 0.2);
+  outline: none;
+}
+
+.diff-card.selected {
+  border-color: #9dffc8;
+  box-shadow: 0 0 0 1px rgba(88, 255, 157, 0.45), 0 0 28px rgba(22, 196, 106, 0.32);
+  background: linear-gradient(180deg, rgba(16, 44, 32, 0.95), rgba(6, 18, 13, 0.95));
+}
+
+.diff-name {
+  font-family: var(--font);
+  font-size: clamp(11px, 1.7vw, 15px);
+  letter-spacing: 0.1em;
+  color: #eafff2;
+  text-shadow: 0 0 12px rgba(88, 255, 157, 0.4);
+}
+
+.diff-card.selected .diff-name { color: var(--green); }
+
+.diff-tag {
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.diff-desc {
+  font-size: clamp(9px, 1.15vw, 11px);
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.diff-card[data-difficulty="facil"] .diff-name { color: #9dffc8; }
+.diff-card[data-difficulty="dificil"] .diff-name { color: #ff9a9a; }
+
+.diff-tag-inline {
+  font-style: normal;
+  font-size: 8px;
+  letter-spacing: 0.12em;
+  margin-left: 7px;
+  padding: 1px 5px;
+  border: 1px solid rgba(88, 255, 157, 0.28);
+  border-radius: 2px;
+  color: var(--muted);
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
 /* ---------------- ranking ---------------- */
 
 .ranking-list {
@@ -768,6 +846,7 @@ input::placeholder { color: rgba(131, 168, 150, 0.5); }
               <button id="btn-new" class="btn primary" type="button">Novo jogo</button>
               <button id="btn-ranking" class="btn" type="button">Ranking</button>
               <button id="btn-controls" class="btn" type="button">Controles</button>
+              <button id="btn-difficulty" class="btn" type="button">Dificuldade: Normal</button>
               <button id="btn-account" class="btn" type="button">Conta / Nuvem</button>
               <button id="btn-sound" class="btn" type="button">Som: Ligado</button>
             </div>
@@ -795,6 +874,7 @@ input::placeholder { color: rgba(131, 168, 150, 0.5); }
             <div class="menu">
               <button id="btn-resume" class="btn primary" type="button">Continuar</button>
               <button id="btn-pause-controls" class="btn" type="button">Controles</button>
+              <button id="btn-pause-difficulty" class="btn" type="button">Dificuldade</button>
               <button id="btn-pause-journal" class="btn" type="button">Diário</button>
               <button id="btn-pause-ranking" class="btn" type="button">Ranking</button>
               <button id="btn-pause-account" class="btn" type="button">Conta / Nuvem</button>
@@ -833,6 +913,38 @@ input::placeholder { color: rgba(131, 168, 150, 0.5); }
             </div>
             <div class="row">
               <button id="btn-controls-close" class="btn primary" type="button">Voltar</button>
+            </div>
+          </div>
+        </section>
+
+        <section id="screen-difficulty" class="screen">
+          <div class="panel wide">
+            <div class="kicker">ESCOLHA SEU DESAFIO</div>
+            <h2>Dificuldade</h2>
+            <p class="hint">
+              A dificuldade vale para a partida inteira: quantos corações você começa,
+              quanta vida e velocidade os inimigos têm e o dano que o Kennedito causa.
+              Ela fica salva e vai para a nuvem junto com o progresso.
+            </p>
+            <div class="difficulty-grid" id="difficulty-grid">
+              <button class="diff-card" data-difficulty="facil" type="button">
+                <span class="diff-name">FÁCIL</span>
+                <span class="diff-tag">Recruta</span>
+                <span class="diff-desc">+3 corações · inimigos com 70% da vida e mais lentos · você causa 25% mais dano</span>
+              </button>
+              <button class="diff-card" data-difficulty="normal" type="button">
+                <span class="diff-name">NORMAL</span>
+                <span class="diff-tag">Aluno</span>
+                <span class="diff-desc">6 corações · inimigos e chefes no balanceamento original da escola</span>
+              </button>
+              <button class="diff-card" data-difficulty="dificil" type="button">
+                <span class="diff-name">DIFÍCIL</span>
+                <span class="diff-tag">Pesadelo</span>
+                <span class="diff-desc">−2 corações · inimigos com 140% da vida e 20% mais rápidos · chefes com 45% mais vida</span>
+              </button>
+            </div>
+            <div class="row">
+              <button id="btn-difficulty-close" class="btn primary" type="button">Voltar</button>
             </div>
           </div>
         </section>
@@ -937,6 +1049,7 @@ input::placeholder { color: rgba(131, 168, 150, 0.5); }
     </div>
   </div>
 
+  
   
   
   
@@ -1979,6 +2092,89 @@ window.KC_CONFIG = {
   localApiBase: "http://localhost:3001",
   requestTimeoutMs: 15000
 };
+
+/* ===== js/difficulty.js ===== */
+/* =========================================================
+   KENNEDITO — dificuldades
+
+   A dificuldade vale para a partida inteira: quantos corações
+   o Kennedito começa, quanta vida e velocidade os inimigos
+   têm, quanto os chefes aguentam e o dano que o jogador
+   causa. Fica salva no save (settings.difficulty) e vai
+   para a nuvem junto com o resto.
+   ========================================================= */
+
+const DIFFICULTY_ORDER = ['facil', 'normal', 'dificil'];
+
+const DIFFICULTIES = {
+  facil: {
+    id: 'facil',
+    name: 'FÁCIL',
+    tag: 'Recruta',
+    desc: 'Mais corações e inimigos bem mais fracos. Para conhecer a escola sem sufoco.',
+    hearts: 3,
+    maxHearts: 14,
+    playerDamage: 1.25,
+    enemyHp: 0.7,
+    enemySpeed: 0.85,
+    bossHp: 0.7,
+    bossSpeed: 0.85
+  },
+  normal: {
+    id: 'normal',
+    name: 'NORMAL',
+    tag: 'Aluno',
+    desc: 'O jeito que a escola foi desenhada. Equilibrado, do jeito que o	devia ser.',
+    hearts: 0,
+    maxHearts: 11,
+    playerDamage: 1,
+    enemyHp: 1,
+    enemySpeed: 1,
+    bossHp: 1,
+    bossSpeed: 1
+  },
+  dificil: {
+    id: 'dificil',
+    name: 'DIFÍCIL',
+    tag: 'Pesadelo',
+    desc: 'Menos corações, inimigos mais rápidos e chefes com o dobro de raiva.',
+    hearts: -2,
+    maxHearts: 9,
+    playerDamage: 0.8,
+    enemyHp: 1.4,
+    enemySpeed: 1.2,
+    bossHp: 1.45,
+    bossSpeed: 1.2
+  }
+};
+
+const DIFFICULTY_DEFAULT = 'normal';
+
+/* Devolve a definição da dificuldade, sempre valendo. */
+function difficultyDef(id) {
+  return DIFFICULTIES[id] || DIFFICULTIES[DIFFICULTY_DEFAULT];
+}
+
+/* Normaliza o id (usado quando o save vem da nuvem). */
+function difficultyId(id) {
+  return DIFFICULTIES[id] ? id : DIFFICULTY_DEFAULT;
+}
+
+/* Corações com que o jogador começa. */
+function difficultyBaseHearts(id) {
+  return 6 + difficultyDef(id).hearts;
+}
+
+/* Teto de corações (cada chefe derrotado dá +1). */
+function difficultyMaxHearts(id) {
+  return difficultyDef(id).maxHearts;
+}
+
+/* Multiplicador do dano do jogador, já arredondado e com piso de 1. */
+function difficultyPlayerDamage(id, base) {
+  const value = Math.round(base * difficultyDef(id).playerDamage);
+  return value < 1 ? 1 : value;
+}
 
 /* ===== js/api.js ===== */
 /* =========================================================
@@ -5730,7 +5926,7 @@ class Player {
     const heavy = this.attackIndex === 2;
     const speed = heavy ? 340 : 400;
     const life = heavy ? 1.5 : 1.1;
-    const damage = heavy ? 13 : 6;
+    const damage = difficultyPlayerDamage(this.game.difficultyId, heavy ? 13 : 6);
     this.game.spawnProjectile({
       type: 'chalk',
       owner: 'player',
@@ -5795,7 +5991,7 @@ class Player {
       vy: Math.sin(angle) * speed,
       w: 16,
       h: 14,
-      damage: 11,
+      damage: difficultyPlayerDamage(this.game.difficultyId, 11),
       life: 1.6,
       angle: angle,
       spin: 10,
@@ -6103,7 +6299,10 @@ class Enemy {
     this.baseY = y;
     this.w = this.type === 'bug' ? 18 : 18;
     this.h = this.type === 'bug' ? 14 : 26;
-    this.hp = this.type === 'spectral' ? 4 : (this.type === 'bug' ? 2 : 3);
+    // a dificuldade mexe na vida e na velocidade dos inimigos
+    const diff = difficultyDef(game ? game.difficultyId : DIFFICULTY_DEFAULT);
+    const baseHp = this.type === 'spectral' ? 4 : (this.type === 'bug' ? 2 : 3);
+    this.hp = Math.max(1, Math.round(baseHp * diff.enemyHp));
     this.maxHp = this.hp;
     this.vx = 0;
     this.vy = 0;
@@ -6111,7 +6310,8 @@ class Enemy {
     this.dead = false;
     this.flash = 0;
     this.t = Math.random() * 10;
-    this.speed = this.type === 'bug' ? 62 : (this.type === 'spectral' ? 50 : 38);
+    const baseSpeed = this.type === 'bug' ? 62 : (this.type === 'spectral' ? 50 : 38);
+    this.speed = baseSpeed * diff.enemySpeed;
     this.contactCooldown = 0;
     this.phase = o.phase || 0;
     this.scale = o.scale || 1;
@@ -7218,8 +7418,11 @@ class Boss {
     this.color = def.color;
     this.w = def.w;
     this.h = def.h;
-    this.maxHp = def.hp;
-    this.hp = def.hp;
+    // a dificuldade mexe na vida e na velocidade dos chefes
+    const diff = difficultyDef(game ? game.difficultyId : DIFFICULTY_DEFAULT);
+    this.speedMul = diff.bossSpeed || 1;
+    this.maxHp = Math.max(1, Math.round(def.hp * diff.bossHp));
+    this.hp = this.maxHp;
     this.phase = 1;
     this.x = 0;
     this.y = game.room ? game.room.floorY : 300;
@@ -7227,7 +7430,7 @@ class Boss {
     this.state = 'enter';
     this.t = 0;
     this.timer = 0;
-    this.cooldown = 0.9;
+    this.setCooldown(0.9);
     this.attack = null;
     this.attackName = '';
     this.attackStep = 0;
@@ -7266,10 +7469,16 @@ class Boss {
     if (p && !p.dead) this.facing = p.x >= this.x ? 1 : -1;
   }
 
+  /* Espera entre os ataques: na dificuldade difícil o chefe ataca
+     mais vezes, porque o intervalo é menor. */
+  setCooldown(seconds) {
+    this.cooldown = seconds / (this.speedMul || 1);
+  }
+
   beginFight() {
     this.state = 'idle';
     this.timer = 0;
-    this.cooldown = 0.85;
+    this.setCooldown(0.85);
     this.invuln = 0;
     this.facePlayer();
   }
@@ -7313,7 +7522,7 @@ class Boss {
       if (this.timer >= 1.15) {
         this.state = 'idle';
         this.invuln = 0;
-        this.cooldown = 0.45;
+        this.setCooldown(0.45);
         this.timer = 0;
       }
       return;
@@ -7330,7 +7539,7 @@ class Boss {
         const distToPlayer = Math.abs(p.x - this.x);
         if (distToPlayer > (this.def.preferred || 145) && !this.hop && !this.dash) {
           const dir = p.x > this.x ? 1 : -1;
-          this.x += dir * (this.def.speed || 50) * dt;
+          this.x += dir * (this.def.speed || 50) * (this.speedMul || 1) * dt;
           this.state = 'walk';
         } else {
           this.state = 'idle';
@@ -7410,7 +7619,7 @@ class Boss {
     }
     const name = pick(list);
     if (!name || !this.def.attacks[name]) {
-      this.cooldown = 1;
+      this.setCooldown(1);
       return;
     }
     this.startAttack(name);
@@ -7426,7 +7635,7 @@ class Boss {
       data = null;
     }
     if (!data || !data.steps || !data.steps.length) {
-      this.cooldown = 0.8;
+      this.setCooldown(0.8);
       this.state = 'idle';
       return;
     }
@@ -7457,7 +7666,7 @@ class Boss {
       this.attack = null;
       this.attackName = '';
       this.state = 'idle';
-      this.cooldown = (this.phase === 2 ? 0.55 : 0.8) + rand(0, 0.3);
+      this.setCooldown((this.phase === 2 ? 0.55 : 0.8) + rand(0, 0.3));
     }
   }
 
@@ -7823,7 +8032,7 @@ function isBossRoom(id) {
 
   UI.init = function () {
     [
-      'title', 'intro', 'pause', 'controls', 'account', 'ranking', 'journal',
+      'title', 'intro', 'pause', 'controls', 'difficulty', 'account', 'ranking', 'journal',
       'gameover', 'ending', 'confirm'
     ].forEach(function (name) {
       UI.screens[name] = $('screen-' + name);
@@ -7836,6 +8045,9 @@ function isBossRoom(id) {
       btnNew: $('btn-new'),
       btnRanking: $('btn-ranking'),
       btnControls: $('btn-controls'),
+      btnDifficulty: $('btn-difficulty'),
+      btnDifficultyClose: $('btn-difficulty-close'),
+      difficultyGrid: $('difficulty-grid'),
       btnAccount: $('btn-account'),
       btnSound: $('btn-sound'),
       btnIntroNext: $('btn-intro-next'),
@@ -7844,6 +8056,7 @@ function isBossRoom(id) {
       introText: $('intro-text'),
       btnResume: $('btn-resume'),
       btnPauseControls: $('btn-pause-controls'),
+      btnPauseDifficulty: $('btn-pause-difficulty'),
       btnPauseJournal: $('btn-pause-journal'),
       btnPauseRanking: $('btn-pause-ranking'),
       btnPauseAccount: $('btn-pause-account'),
@@ -7892,6 +8105,7 @@ function isBossRoom(id) {
     bind(UI.el.btnContinue, function () { audio.init(); call('continueGame'); });
     bind(UI.el.btnRanking, function () { audio.init(); call('openRanking', 'title'); });
     bind(UI.el.btnControls, function () { call('openControls', 'title'); });
+    bind(UI.el.btnDifficulty, function () { call('openDifficulty', 'title'); });
     bind(UI.el.btnAccount, function () { call('openAccount', 'title'); });
     bind(UI.el.btnSound, function () { call('toggleSound'); });
 
@@ -7902,6 +8116,7 @@ function isBossRoom(id) {
     // pausa
     bind(UI.el.btnResume, function () { call('resume'); });
     bind(UI.el.btnPauseControls, function () { call('openControls', 'pause'); });
+    bind(UI.el.btnPauseDifficulty, function () { call('openDifficulty', 'pause'); });
     bind(UI.el.btnPauseJournal, function () { call('openJournal'); });
     bind(UI.el.btnPauseRanking, function () { call('openRanking', 'pause'); });
     bind(UI.el.btnPauseAccount, function () { call('openAccount', 'pause'); });
@@ -7910,6 +8125,16 @@ function isBossRoom(id) {
 
     // controles
     bind(UI.el.btnControlsClose, function () { call('closeOverlay', 'controls'); });
+
+    // dificuldade
+    bind(UI.el.btnDifficultyClose, function () { call('closeDifficulty'); });
+    if (UI.el.difficultyGrid) {
+      UI.el.difficultyGrid.addEventListener('click', function (e) {
+        const card = e.target.closest ? e.target.closest('.diff-card') : null;
+        if (!card) return;
+        call('setDifficulty', card.getAttribute('data-difficulty'));
+      });
+    }
 
     // conta
     bind(UI.el.tabLogin, function () { setAccountMode('login'); });
@@ -8031,6 +8256,20 @@ function isBossRoom(id) {
     if (UI.el.btnSound) UI.el.btnSound.textContent = muted ? 'Som: Desligado' : 'Som: Ligado';
   };
 
+  /* Difficulty: highlights the chosen card and updates the title button. */
+  UI.setDifficulty = function (id) {
+    const def = difficultyDef(id);
+    if (UI.el.btnDifficulty) {
+      UI.el.btnDifficulty.textContent = 'Dificuldade: ' + def.name;
+    }
+    if (UI.el.difficultyGrid) {
+      const cards = UI.el.difficultyGrid.querySelectorAll('.diff-card');
+      for (let i = 0; i < cards.length; i++) {
+        cards[i].classList.toggle('selected', cards[i].getAttribute('data-difficulty') === def.id);
+      }
+    }
+  };
+
   UI.setTopVisible = function (visible) {
     if (UI.el.topControls) UI.el.topControls.classList.toggle('hidden', !visible);
   };
@@ -8131,6 +8370,12 @@ function isBossRoom(id) {
       const name = document.createElement('span');
       name.className = 'name';
       name.textContent = entry.name || '???';
+      if (entry.difficulty) {
+        const tag = document.createElement('em');
+        tag.className = 'diff-tag-inline';
+        tag.textContent = difficultyDef(entry.difficulty).name;
+        name.appendChild(tag);
+      }
       const time = document.createElement('span');
       time.className = 'time';
       time.textContent = fmtTimeMs(entry.timeMs);
@@ -8176,7 +8421,8 @@ function isBossRoom(id) {
       ['Inimigos', String((stats && stats.kills) || 0)],
       ['Chefes', String((stats && stats.bosses) || 0) + '/5'],
       ['Chaves', String((stats && stats.keys) || 0) + '/5'],
-      ['Diário', String((stats && stats.lore) || 0) + '/6']
+      ['Diário', String((stats && stats.lore) || 0) + '/6'],
+      ['Dificuldade', difficultyDef(stats && stats.difficulty).name]
     ];
     items.forEach(function (item) {
       const d = document.createElement('div');
@@ -8298,7 +8544,7 @@ function defaultSave() {
     keys: [],
     abilities: [],
     lore: [],
-    settings: { muted: false, volume: 0.72 },
+    settings: { muted: false, volume: 0.72, difficulty: DIFFICULTY_DEFAULT },
     stats: { timeMs: 0, deaths: 0, kills: 0, runs: 0 },
     endingsSeen: 0,
     finalCutsceneSeen: false,
@@ -8359,8 +8605,22 @@ function sanitizeSave(raw) {
     });
   }
 
-  out.maxHearts = clamp(Number(raw.maxHearts) || (6 + out.bossesDefeated.length), 6, 11);
-  out.maxHearts = Math.max(out.maxHearts, 6 + out.bossesDefeated.length);
+  if (raw.settings && typeof raw.settings === 'object') {
+    out.settings.muted = !!raw.settings.muted;
+    out.settings.volume = clamp(Number(raw.settings.volume) || 0.72, 0, 1);
+    out.settings.difficulty = difficultyId(raw.settings.difficulty);
+  }
+
+  // os corações dependem da dificuldade: a base muda e o teto também
+  const baseHearts = difficultyBaseHearts(out.settings.difficulty);
+  const capHearts = difficultyMaxHearts(out.settings.difficulty);
+  const earned = baseHearts + out.bossesDefeated.length;
+  out.maxHearts = clamp(
+    Number(raw.maxHearts) || earned,
+    Math.min(baseHearts, capHearts),
+    capHearts
+  );
+  out.maxHearts = Math.min(Math.max(out.maxHearts, earned), capHearts);
 
   let roomId = String(raw.currentRoom || 'hub');
   if (!ROOMS[roomId]) roomId = 'hub';
@@ -8369,10 +8629,6 @@ function sanitizeSave(raw) {
   }
   out.currentRoom = roomId;
 
-  if (raw.settings && typeof raw.settings === 'object') {
-    out.settings.muted = !!raw.settings.muted;
-    out.settings.volume = clamp(Number(raw.settings.volume) || 0.72, 0, 1);
-  }
   if (raw.stats && typeof raw.stats === 'object') {
     out.stats.timeMs = Math.max(0, Math.min(999999999, Math.round(Number(raw.stats.timeMs) || 0)));
     out.stats.deaths = Math.max(0, Math.min(999999, Math.floor(Number(raw.stats.deaths) || 0)));
@@ -8559,10 +8815,60 @@ class Game {
   }
 
   applySettings() {
-    if (!this.audio || !this.save) return;
+    if (!this.save) return;
+    this.applyDifficulty();
+    if (!this.audio) return;
     this.audio.setMuted(!!this.save.settings.muted);
     this.audio.setVolume(this.save.settings.volume);
     if (this.ui) this.ui.setSound(!!this.save.settings.muted);
+  }
+
+  /* A dificuldade fica no save: ela vale para a partida inteira e
+     vai para a nuvem junto com o resto do progresso. */
+  applyDifficulty() {
+    if (!this.save) return;
+    const id = difficultyId(this.save.settings.difficulty);
+    this.difficulty = difficultyDef(id);
+    this.difficultyId = id;
+    if (this.player) this.player.syncAbilities();
+    if (this.ui) this.ui.setDifficulty(id);
+  }
+
+  setDifficulty(id) {
+    if (!this.save) return;
+    const next = difficultyId(id);
+    const nextMax = Math.min(
+      difficultyBaseHearts(next) + this.save.bossesDefeated.length,
+      difficultyMaxHearts(next)
+    );
+    // no meio da partida só dá para aumentar a dificuldade: assim
+    // ninguém troca para fácil para encher a barra de corações
+    const inRun = this.state !== 'title' && this.state !== 'intro';
+    if (inRun && nextMax > this.save.maxHearts) {
+      this.ui.setDifficulty(this.save.settings.difficulty);
+      this.toast('Durante a partida só dá para aumentar a dificuldade.', 3400);
+      return;
+    }
+    this.save.settings.difficulty = next;
+    this.save.maxHearts = nextMax;
+    this.applyDifficulty();
+    if (this.player) {
+      this.player.hp = Math.min(this.player.hp, this.player.maxHp);
+      this.player.syncAbilities();
+    }
+    this.saveGame('difficulty');
+    this.toast('Dificuldade: ' + this.difficulty.name + ' · ' + this.difficulty.tag, 2800);
+  }
+
+  openDifficulty(from) {
+    this.overlayReturn = from || 'title';
+    this.ui.showScreen('difficulty');
+    this.ui.setDifficulty(this.save ? this.save.settings.difficulty : DIFFICULTY_DEFAULT);
+  }
+
+  closeDifficulty() {
+    const back = this.overlayReturn || 'title';
+    this.ui.showScreen(back === 'pause' ? 'pause' : (back === 'ending' ? 'ending' : 'title'));
   }
 
   progressScore(save) {
@@ -8601,6 +8907,9 @@ class Game {
       openRanking: (from) => this.openRanking(from),
       refreshRanking: () => this.refreshRanking(),
       openControls: (from) => this.openControls(from),
+      openDifficulty: (from) => this.openDifficulty(from),
+      closeDifficulty: () => this.closeDifficulty(),
+      setDifficulty: (id) => this.setDifficulty(id),
       openJournal: () => this.openJournal(),
       openAccount: (from) => this.openAccount(from),
       closeAccount: () => this.closeAccount(),
@@ -8688,9 +8997,13 @@ class Game {
   startNewGame() {
     const muted = !!this.save.settings.muted;
     const volume = this.save.settings.volume;
+    const difficulty = difficultyId(this.save.settings.difficulty);
     this.save = defaultSave();
     this.save.settings.muted = muted;
     this.save.settings.volume = volume;
+    this.save.settings.difficulty = difficulty;
+    this.save.maxHearts = difficultyBaseHearts(difficulty);
+    this.applyDifficulty();
     this.save.introSeen = false;
     this.save.lastSavedAt = Date.now();
     this.autosaveTimer = 0;
@@ -9294,7 +9607,10 @@ class Game {
     let ability = null;
     if (firstTime) {
       this.save.bossesDefeated.push(boss.id);
-      this.save.maxHearts = Math.min(11, this.save.maxHearts + 1);
+      this.save.maxHearts = Math.min(
+        difficultyMaxHearts(this.save.settings.difficulty),
+        this.save.maxHearts + 1
+      );
       ability = (typeof BOSS_ABILITY !== 'undefined') ? BOSS_ABILITY[boss.id] : null;
       if (ability) this.unlockAbility(ability);
     }
@@ -9445,7 +9761,8 @@ class Game {
       kills: this.save.stats.kills,
       bosses: this.save.bossesDefeated.length,
       keys: Math.min(5, this.save.bossesDefeated.length),
-      lore: this.save.lore.length
+      lore: this.save.lore.length,
+      difficulty: this.save.settings.difficulty
     };
     this.ui.setTopVisible(false);
     this.ui.setTouchVisible(false);
@@ -9457,28 +9774,6 @@ class Game {
   endingToTitle() {
     this.saveGame('endingTitle');
     this.goTitle();
-  }
-
-  submitRun() {
-    if (this.runSubmitted) return;
-    this.runSubmitted = true;
-    const payload = {
-      timeMs: Math.max(1, Math.round(this.save.stats.timeMs)),
-      deaths: Math.max(0, Math.round(this.save.stats.deaths)),
-      kills: Math.max(0, Math.round(this.save.stats.kills)),
-      bosses: this.save.bossesDefeated.length,
-      lore: this.save.lore.length,
-      completedAt: new Date().toISOString()
-    };
-    if (!this.api || !this.api.token || !this.api.base) {
-      this.toast('Tempo salvo localmente. Entre em uma conta para enviar ao ranking.', 3600);
-      return;
-    }
-    this.api.submitRun(payload).then(() => {
-      this.toast('Tempo enviado ao ranking da CEPK.', 2800);
-    }).catch(() => {
-      this.toast('Ranking indisponível. Seu tempo ficou salvo localmente.', 3200);
-    });
   }
 
   /* ---------------- morte, pausa e diário ---------------- */
@@ -9610,15 +9905,17 @@ class Game {
     this.hazards = [];
     this.spawnParticles(player.x, player.y - 24, 26, '#f2c45a', 'ring');
     this.spawnParticles(player.x, player.y - 24, 22, '#58ff9d', 'spark');
+    const warcryDamage = difficultyPlayerDamage(this.difficultyId, 18);
+    const warcryBossDamage = difficultyPlayerDamage(this.difficultyId, 20);
     for (let i = 0; i < this.enemies.length; i++) {
       const e = this.enemies[i];
       if (!e.dead && dist(e.x, e.y - e.h / 2, player.x, player.y - 20) < 190) {
-        e.hurt(18, player);
+        e.hurt(warcryDamage, player);
       }
     }
     if (this.boss && !this.boss.dead && !this.boss.dying &&
         dist(this.boss.x, this.boss.y - this.boss.h / 2, player.x, player.y - 20) < 220) {
-      this.boss.takeDamage(20, player, this.boss.x, this.boss.y - 40);
+      this.boss.takeDamage(warcryBossDamage, player, this.boss.x, this.boss.y - 40);
     }
     this.toast('GRITO DE GUERRA!', 1300);
   }
@@ -9879,6 +10176,22 @@ class Game {
     });
     // tempo
     drawOutlinedText(ctx, fmtTimeMs(this.save.stats.timeMs), GAME_W - 14, 39, 8, '#9fd8bd', '#07110b', 'right');
+
+    // dificuldade da partida (canto superior direito)
+    const diff = difficultyDef(this.save.settings.difficulty);
+    ctx.save();
+    ctx.globalAlpha = 0.8;
+    drawOutlinedText(
+      ctx,
+      diff.name,
+      GAME_W - 14,
+      19,
+      7,
+      diff.id === 'dificil' ? '#ff9a9a' : (diff.id === 'facil' ? '#9dffc8' : '#7fbf9d'),
+      '#07110b',
+      'right'
+    );
+    ctx.restore();
 
     // objetivo atual
     const objective = this.currentObjective();
@@ -10276,7 +10589,7 @@ class Game {
   async refreshRanking() {
     const local = this.loadLocalRuns();
     let entries = local.map(function (r, i) {
-      return { rank: i + 1, name: r.name, timeMs: r.timeMs, deaths: r.deaths };
+      return { rank: i + 1, name: r.name, timeMs: r.timeMs, deaths: r.deaths, difficulty: r.difficulty };
     });
     if (this.api && this.api.enabled) {
       try {
@@ -10287,7 +10600,8 @@ class Game {
             rank: r.rank || i + 1,
             name: r.name || '???',
             timeMs: Number(r.timeMs != null ? r.timeMs : (r.time_ms || 0)),
-            deaths: Number(r.deaths || 0)
+            deaths: Number(r.deaths || 0),
+            difficulty: r.difficulty || 'normal'
           };
         });
         entries = remote.concat(entries);
@@ -10357,6 +10671,7 @@ class Game {
       kills: Math.max(0, Math.round(this.save.stats.kills)),
       bosses: this.save.bossesDefeated.length,
       lore: this.save.lore.length,
+      difficulty: this.save.settings.difficulty,
       completedAt: new Date().toISOString()
     };
     const local = this.loadLocalRuns();
@@ -10364,7 +10679,8 @@ class Game {
       id: Date.now(),
       name: (this.api && this.api.account && this.api.account.name) || 'Visitante',
       timeMs: payload.timeMs,
-      deaths: payload.deaths
+      deaths: payload.deaths,
+      difficulty: payload.difficulty
     });
     local.sort(function (a, b) { return a.timeMs - b.timeMs; });
     this.saveLocalRuns(local.slice(0, 50));

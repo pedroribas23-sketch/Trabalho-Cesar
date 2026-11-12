@@ -45,6 +45,27 @@ describe("validation", () => {
     assert.equal(result.success, true);
   });
 
+  it("guarda a dificuldade escolhida no save", () => {
+    const parsed = saveSchema.parse({
+      settings: { muted: false, volume: 0.8, difficulty: "dificil" }
+    });
+    assert.equal(parsed.settings.difficulty, "dificil");
+  });
+
+  it("usa a dificuldade normal quando a que vem no save nao existe", () => {
+    const parsed = saveSchema.parse({
+      settings: { muted: false, volume: 0.8, difficulty: "impossivel" }
+    });
+    assert.equal(parsed.settings.difficulty, "normal");
+  });
+
+  it("guarda a dificuldade no tempo enviado para o ranking", () => {
+    const parsed = runSchema.parse({ timeMs: 5000, difficulty: "facil" });
+    assert.equal(parsed.difficulty, "facil");
+    const padrao = runSchema.parse({ timeMs: 5000 });
+    assert.equal(padrao.difficulty, "normal");
+  });
+
   it("preenche campos ausentes com padrões", () => {
     const parsed = saveSchema.parse({});
     assert.equal(parsed.currentRoom, "hub");

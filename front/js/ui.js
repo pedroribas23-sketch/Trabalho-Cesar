@@ -26,7 +26,7 @@
 
   UI.init = function () {
     [
-      'title', 'intro', 'pause', 'controls', 'account', 'ranking', 'journal',
+      'title', 'intro', 'pause', 'controls', 'difficulty', 'account', 'ranking', 'journal',
       'gameover', 'ending', 'confirm'
     ].forEach(function (name) {
       UI.screens[name] = $('screen-' + name);
@@ -39,6 +39,9 @@
       btnNew: $('btn-new'),
       btnRanking: $('btn-ranking'),
       btnControls: $('btn-controls'),
+      btnDifficulty: $('btn-difficulty'),
+      btnDifficultyClose: $('btn-difficulty-close'),
+      difficultyGrid: $('difficulty-grid'),
       btnAccount: $('btn-account'),
       btnSound: $('btn-sound'),
       btnIntroNext: $('btn-intro-next'),
@@ -47,6 +50,7 @@
       introText: $('intro-text'),
       btnResume: $('btn-resume'),
       btnPauseControls: $('btn-pause-controls'),
+      btnPauseDifficulty: $('btn-pause-difficulty'),
       btnPauseJournal: $('btn-pause-journal'),
       btnPauseRanking: $('btn-pause-ranking'),
       btnPauseAccount: $('btn-pause-account'),
@@ -95,6 +99,7 @@
     bind(UI.el.btnContinue, function () { audio.init(); call('continueGame'); });
     bind(UI.el.btnRanking, function () { audio.init(); call('openRanking', 'title'); });
     bind(UI.el.btnControls, function () { call('openControls', 'title'); });
+    bind(UI.el.btnDifficulty, function () { call('openDifficulty', 'title'); });
     bind(UI.el.btnAccount, function () { call('openAccount', 'title'); });
     bind(UI.el.btnSound, function () { call('toggleSound'); });
 
@@ -105,6 +110,7 @@
     // pausa
     bind(UI.el.btnResume, function () { call('resume'); });
     bind(UI.el.btnPauseControls, function () { call('openControls', 'pause'); });
+    bind(UI.el.btnPauseDifficulty, function () { call('openDifficulty', 'pause'); });
     bind(UI.el.btnPauseJournal, function () { call('openJournal'); });
     bind(UI.el.btnPauseRanking, function () { call('openRanking', 'pause'); });
     bind(UI.el.btnPauseAccount, function () { call('openAccount', 'pause'); });
@@ -113,6 +119,16 @@
 
     // controles
     bind(UI.el.btnControlsClose, function () { call('closeOverlay', 'controls'); });
+
+    // dificuldade
+    bind(UI.el.btnDifficultyClose, function () { call('closeDifficulty'); });
+    if (UI.el.difficultyGrid) {
+      UI.el.difficultyGrid.addEventListener('click', function (e) {
+        const card = e.target.closest ? e.target.closest('.diff-card') : null;
+        if (!card) return;
+        call('setDifficulty', card.getAttribute('data-difficulty'));
+      });
+    }
 
     // conta
     bind(UI.el.tabLogin, function () { setAccountMode('login'); });
@@ -234,6 +250,20 @@
     if (UI.el.btnSound) UI.el.btnSound.textContent = muted ? 'Som: Desligado' : 'Som: Ligado';
   };
 
+  /* Difficulty: highlights the chosen card and updates the title button. */
+  UI.setDifficulty = function (id) {
+    const def = difficultyDef(id);
+    if (UI.el.btnDifficulty) {
+      UI.el.btnDifficulty.textContent = 'Dificuldade: ' + def.name;
+    }
+    if (UI.el.difficultyGrid) {
+      const cards = UI.el.difficultyGrid.querySelectorAll('.diff-card');
+      for (let i = 0; i < cards.length; i++) {
+        cards[i].classList.toggle('selected', cards[i].getAttribute('data-difficulty') === def.id);
+      }
+    }
+  };
+
   UI.setTopVisible = function (visible) {
     if (UI.el.topControls) UI.el.topControls.classList.toggle('hidden', !visible);
   };
@@ -334,6 +364,12 @@
       const name = document.createElement('span');
       name.className = 'name';
       name.textContent = entry.name || '???';
+      if (entry.difficulty) {
+        const tag = document.createElement('em');
+        tag.className = 'diff-tag-inline';
+        tag.textContent = difficultyDef(entry.difficulty).name;
+        name.appendChild(tag);
+      }
       const time = document.createElement('span');
       time.className = 'time';
       time.textContent = fmtTimeMs(entry.timeMs);
@@ -379,7 +415,8 @@
       ['Inimigos', String((stats && stats.kills) || 0)],
       ['Chefes', String((stats && stats.bosses) || 0) + '/5'],
       ['Chaves', String((stats && stats.keys) || 0) + '/5'],
-      ['Diário', String((stats && stats.lore) || 0) + '/6']
+      ['Diário', String((stats && stats.lore) || 0) + '/6'],
+      ['Dificuldade', difficultyDef(stats && stats.difficulty).name]
     ];
     items.forEach(function (item) {
       const d = document.createElement('div');

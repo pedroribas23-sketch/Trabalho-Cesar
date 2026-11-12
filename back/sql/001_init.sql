@@ -34,6 +34,7 @@ CREATE TABLE IF NOT EXISTS runs (
   kills integer NOT NULL DEFAULT 0,
   bosses integer NOT NULL DEFAULT 0,
   lore integer NOT NULL DEFAULT 0,
+  difficulty text NOT NULL DEFAULT 'normal',
   completed_at timestamptz NOT NULL DEFAULT now(),
   created_at timestamptz NOT NULL DEFAULT now()
 );

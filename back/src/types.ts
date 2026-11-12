@@ -28,5 +28,6 @@ export interface RunRow {
   kills: number;
   bosses: number;
   lore: number;
+  difficulty: string;
   completed_at: Date;
 }

@@ -1,5 +1,6 @@
 import { Pool } from "pg";
 import { loadConfig, type AppConfig } from "./config";
+import { ensureSchema } from "./db";
 import {
   ApiError,
   bearerToken,
@@ -43,6 +44,14 @@ function getContext(): Promise<CoreContext> {
       pool.on("error", (error) => {
         console.error("[db] erro inesperado no pool do Postgres:", error);
       });
+      // o schema é conferido no boot: coluna nova entra sozinha no deploy
+      if (config.autoMigrate) {
+        try {
+          await ensureSchema(pool);
+        } catch (error) {
+          console.error("[api] falha ao conferir o schema:", error);
+        }
+      }
       return createCoreContext(pool, config);
     })();
   }

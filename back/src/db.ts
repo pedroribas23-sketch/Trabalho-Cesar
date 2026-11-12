@@ -1,6 +1,6 @@
 import { Pool } from "pg";
 import { getConfig } from "./config";
-import { SCHEMA_SQL } from "./schema";
+import { MIGRATIONS_SQL, SCHEMA_SQL } from "./schema";
 
 let sharedPool: Pool | null = null;
 
@@ -26,6 +26,9 @@ export function getPool(): Pool {
 
 export async function ensureSchema(pool: Pool = getPool()): Promise<void> {
   await pool.query(SCHEMA_SQL);
+  for (const migration of MIGRATIONS_SQL) {
+    await pool.query(migration);
+  }
 }
 
 export async function checkDatabase(pool: Pool = getPool()): Promise<void> {

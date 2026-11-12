@@ -358,7 +358,8 @@ export async function leaderboard(ctx: CoreContext, limitRaw: unknown): Promise<
         rank: index + 1,
         name: row.name,
         timeMs: row.timeMs,
-        deaths: row.deaths
+        deaths: row.deaths,
+        difficulty: row.difficulty
       })),
       total
     }
@@ -386,6 +387,7 @@ export async function submitRun(
         kills: run.kills,
         bosses: run.bosses,
         lore: run.lore,
+        difficulty: body.difficulty,
         completedAt: new Date(run.completed_at).toISOString()
       }
     }

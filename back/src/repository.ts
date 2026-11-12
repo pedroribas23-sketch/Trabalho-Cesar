@@ -178,15 +178,16 @@ export interface RunInput {
   kills: number;
   bosses: number;
   lore: number;
+  difficulty: string;
   completedAt?: string;
 }
 
 export async function insertRun(pool: Pool, accountId: string, run: RunInput): Promise<RunRow> {
   const completedAt = run.completedAt ? new Date(run.completedAt) : new Date();
   const result = await pool.query<RunRow>(
-    `INSERT INTO runs (account_id, time_ms, deaths, kills, bosses, lore, completed_at)
-     VALUES ($1, $2, $3, $4, $5, $6, $7)
-     RETURNING id, time_ms, deaths, kills, bosses, lore, completed_at`,
+    `INSERT INTO runs (account_id, time_ms, deaths, kills, bosses, lore, difficulty, completed_at)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+     RETURNING id, time_ms, deaths, kills, bosses, lore, difficulty, completed_at`,
     [
       accountId,
       run.timeMs,
@@ -194,6 +195,7 @@ export async function insertRun(pool: Pool, accountId: string, run: RunInput): P
       run.kills,
       run.bosses,
       run.lore,
+      run.difficulty,
       Number.isNaN(completedAt.getTime()) ? new Date() : completedAt
     ]
   );
@@ -203,9 +205,14 @@ export async function insertRun(pool: Pool, accountId: string, run: RunInput): P
 export async function listBestRuns(
   pool: Pool,
   limit: number
-): Promise<Array<{ name: string; timeMs: number; deaths: number }>> {
-  const result = await pool.query<{ name: string; time_ms: number; deaths: number }>(
-    `SELECT a.name, r.time_ms, r.deaths
+): Promise<Array<{ name: string; timeMs: number; deaths: number; difficulty: string }>> {
+  const result = await pool.query<{
+    name: string;
+    time_ms: number;
+    deaths: number;
+    difficulty: string;
+  }>(
+    `SELECT a.name, r.time_ms, r.deaths, r.difficulty
        FROM runs r
        JOIN accounts a ON a.id = r.account_id
       ORDER BY r.time_ms ASC, r.completed_at ASC
@@ -215,7 +222,8 @@ export async function listBestRuns(
   return result.rows.map((row) => ({
     name: row.name,
     timeMs: Number(row.time_ms),
-    deaths: Number(row.deaths)
+    deaths: Number(row.deaths),
+    difficulty: row.difficulty || "normal"
   }));
 }
 

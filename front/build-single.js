@@ -13,6 +13,7 @@ const JS_ORDER = [
   'js/audio.js',
   'js/input.js',
   'js/config.js',
+  'js/difficulty.js',
   'js/api.js',
   'js/art.js',
   'js/world_art.js',

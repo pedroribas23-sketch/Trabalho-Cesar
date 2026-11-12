@@ -5,6 +5,11 @@ const namePattern = /^[^\u0000-\u001f<>]+$/u;
 const bossIdSchema = z.string().min(1).max(40);
 const loreIdSchema = z.string().min(1).max(60);
 
+/* As dificuldades que o jogo oferece. Uma dificuldade desconhecida
+   (save antigo, cliente desatualizado) cai para "normal" em vez de
+   fazer o save inteiro ser recusado. */
+export const difficultySchema = z.enum(["facil", "normal", "dificil"]).catch("normal");
+
 export const saveSchema = z
   .object({
     version: z.number().int().min(1).max(100).default(1),
@@ -18,9 +23,10 @@ export const saveSchema = z
     settings: z
       .object({
         muted: z.boolean().default(false),
-        volume: z.number().min(0).max(1).default(0.72)
+        volume: z.number().min(0).max(1).default(0.72),
+        difficulty: difficultySchema.default("normal")
       })
-      .default({ muted: false, volume: 0.72 }),
+      .default({ muted: false, volume: 0.72, difficulty: "normal" }),
     stats: z
       .object({
         // o front acumula dt * 1000 e pode chegar fracionario: arredonda
@@ -87,6 +93,7 @@ export const runSchema = z
     kills: z.number().int().min(0).max(999_999).default(0),
     bosses: z.number().int().min(0).max(10).default(0),
     lore: z.number().int().min(0).max(100).default(0),
+    difficulty: difficultySchema.default("normal"),
     completedAt: z.string().max(40).optional()
   })
   .strict();

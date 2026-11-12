@@ -476,6 +476,84 @@ input::placeholder { color: rgba(131, 168, 150, 0.5); }
 .controls-grid p { margin: 5px 0; font-size: clamp(10px, 1.35vw, 12px); }
 .controls-grid h3 { margin-top: 0; }
 
+/* ---------------- dificuldade ---------------- */
+
+.difficulty-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin: 16px 0 6px;
+}
+
+.diff-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-start;
+  text-align: left;
+  padding: 14px 13px;
+  border: 1px solid rgba(88, 255, 157, 0.22);
+  border-radius: 4px;
+  background: linear-gradient(180deg, rgba(9, 24, 18, 0.9), rgba(4, 12, 9, 0.9));
+  color: var(--text);
+  cursor: pointer;
+  font-family: var(--font-ui);
+  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.diff-card:hover,
+.diff-card:focus-visible {
+  transform: translateY(-2px);
+  border-color: rgba(88, 255, 157, 0.6);
+  box-shadow: 0 0 22px rgba(22, 196, 106, 0.2);
+  outline: none;
+}
+
+.diff-card.selected {
+  border-color: #9dffc8;
+  box-shadow: 0 0 0 1px rgba(88, 255, 157, 0.45), 0 0 28px rgba(22, 196, 106, 0.32);
+  background: linear-gradient(180deg, rgba(16, 44, 32, 0.95), rgba(6, 18, 13, 0.95));
+}
+
+.diff-name {
+  font-family: var(--font);
+  font-size: clamp(11px, 1.7vw, 15px);
+  letter-spacing: 0.1em;
+  color: #eafff2;
+  text-shadow: 0 0 12px rgba(88, 255, 157, 0.4);
+}
+
+.diff-card.selected .diff-name { color: var(--green); }
+
+.diff-tag {
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.diff-desc {
+  font-size: clamp(9px, 1.15vw, 11px);
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.diff-card[data-difficulty="facil"] .diff-name { color: #9dffc8; }
+.diff-card[data-difficulty="dificil"] .diff-name { color: #ff9a9a; }
+
+.diff-tag-inline {
+  font-style: normal;
+  font-size: 8px;
+  letter-spacing: 0.12em;
+  margin-left: 7px;
+  padding: 1px 5px;
+  border: 1px solid rgba(88, 255, 157, 0.28);
+  border-radius: 2px;
+  color: var(--muted);
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
 /* ---------------- ranking ---------------- */
 
 .ranking-list {

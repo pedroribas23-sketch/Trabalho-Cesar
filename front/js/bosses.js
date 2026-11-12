@@ -822,8 +822,11 @@ class Boss {
     this.color = def.color;
     this.w = def.w;
     this.h = def.h;
-    this.maxHp = def.hp;
-    this.hp = def.hp;
+    // a dificuldade mexe na vida e na velocidade dos chefes
+    const diff = difficultyDef(game ? game.difficultyId : DIFFICULTY_DEFAULT);
+    this.speedMul = diff.bossSpeed || 1;
+    this.maxHp = Math.max(1, Math.round(def.hp * diff.bossHp));
+    this.hp = this.maxHp;
     this.phase = 1;
     this.x = 0;
     this.y = game.room ? game.room.floorY : 300;
@@ -831,7 +834,7 @@ class Boss {
     this.state = 'enter';
     this.t = 0;
     this.timer = 0;
-    this.cooldown = 0.9;
+    this.setCooldown(0.9);
     this.attack = null;
     this.attackName = '';
     this.attackStep = 0;
@@ -870,10 +873,16 @@ class Boss {
     if (p && !p.dead) this.facing = p.x >= this.x ? 1 : -1;
   }
 
+  /* Espera entre os ataques: na dificuldade difícil o chefe ataca
+     mais vezes, porque o intervalo é menor. */
+  setCooldown(seconds) {
+    this.cooldown = seconds / (this.speedMul || 1);
+  }
+
   beginFight() {
     this.state = 'idle';
     this.timer = 0;
-    this.cooldown = 0.85;
+    this.setCooldown(0.85);
     this.invuln = 0;
     this.facePlayer();
   }
@@ -917,7 +926,7 @@ class Boss {
       if (this.timer >= 1.15) {
         this.state = 'idle';
         this.invuln = 0;
-        this.cooldown = 0.45;
+        this.setCooldown(0.45);
         this.timer = 0;
       }
       return;
@@ -934,7 +943,7 @@ class Boss {
         const distToPlayer = Math.abs(p.x - this.x);
         if (distToPlayer > (this.def.preferred || 145) && !this.hop && !this.dash) {
           const dir = p.x > this.x ? 1 : -1;
-          this.x += dir * (this.def.speed || 50) * dt;
+          this.x += dir * (this.def.speed || 50) * (this.speedMul || 1) * dt;
           this.state = 'walk';
         } else {
           this.state = 'idle';
@@ -1014,7 +1023,7 @@ class Boss {
     }
     const name = pick(list);
     if (!name || !this.def.attacks[name]) {
-      this.cooldown = 1;
+      this.setCooldown(1);
       return;
     }
     this.startAttack(name);
@@ -1030,7 +1039,7 @@ class Boss {
       data = null;
     }
     if (!data || !data.steps || !data.steps.length) {
-      this.cooldown = 0.8;
+      this.setCooldown(0.8);
       this.state = 'idle';
       return;
     }
@@ -1061,7 +1070,7 @@ class Boss {
       this.attack = null;
       this.attackName = '';
       this.state = 'idle';
-      this.cooldown = (this.phase === 2 ? 0.55 : 0.8) + rand(0, 0.3);
+      this.setCooldown((this.phase === 2 ? 0.55 : 0.8) + rand(0, 0.3));
     }
   }
 

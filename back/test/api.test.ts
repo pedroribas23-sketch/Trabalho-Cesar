@@ -125,7 +125,7 @@ test("registra tempo no ranking e devolve a leaderboard", async () => {
   const runFast = await request(app)
     .post("/api/runs")
     .set("Authorization", `Bearer ${fast.body.token}`)
-    .send({ timeMs: 120000, deaths: 1 });
+    .send({ timeMs: 120000, deaths: 1, difficulty: "dificil" });
   assert.equal(runFast.status, 201);
 
   const board = await request(app).get("/api/leaderboard?limit=10");
@@ -135,6 +135,9 @@ test("registra tempo no ranking e devolve a leaderboard", async () => {
   assert.equal(board.body.entries[0].rank, 1);
   assert.equal(board.body.entries[0].timeMs, 120000);
   assert.equal(board.body.entries[1].deaths, 12);
+  // a dificuldade da corrida volta junto no ranking
+  assert.equal(board.body.entries[0].difficulty, "dificil");
+  assert.equal(board.body.entries[1].difficulty, "normal");
 });
 
 test("recusa envio de ranking sem sessão", async () => {

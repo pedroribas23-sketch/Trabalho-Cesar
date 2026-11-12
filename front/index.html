@@ -44,6 +44,7 @@
               <button id="btn-new" class="btn primary" type="button">Novo jogo</button>
               <button id="btn-ranking" class="btn" type="button">Ranking</button>
               <button id="btn-controls" class="btn" type="button">Controles</button>
+              <button id="btn-difficulty" class="btn" type="button">Dificuldade: Normal</button>
               <button id="btn-account" class="btn" type="button">Conta / Nuvem</button>
               <button id="btn-sound" class="btn" type="button">Som: Ligado</button>
             </div>
@@ -71,6 +72,7 @@
             <div class="menu">
               <button id="btn-resume" class="btn primary" type="button">Continuar</button>
               <button id="btn-pause-controls" class="btn" type="button">Controles</button>
+              <button id="btn-pause-difficulty" class="btn" type="button">Dificuldade</button>
               <button id="btn-pause-journal" class="btn" type="button">Diário</button>
               <button id="btn-pause-ranking" class="btn" type="button">Ranking</button>
               <button id="btn-pause-account" class="btn" type="button">Conta / Nuvem</button>
@@ -109,6 +111,38 @@
             </div>
             <div class="row">
               <button id="btn-controls-close" class="btn primary" type="button">Voltar</button>
+            </div>
+          </div>
+        </section>
+
+        <section id="screen-difficulty" class="screen">
+          <div class="panel wide">
+            <div class="kicker">ESCOLHA SEU DESAFIO</div>
+            <h2>Dificuldade</h2>
+            <p class="hint">
+              A dificuldade vale para a partida inteira: quantos corações você começa,
+              quanta vida e velocidade os inimigos têm e o dano que o Kennedito causa.
+              Ela fica salva e vai para a nuvem junto com o progresso.
+            </p>
+            <div class="difficulty-grid" id="difficulty-grid">
+              <button class="diff-card" data-difficulty="facil" type="button">
+                <span class="diff-name">FÁCIL</span>
+                <span class="diff-tag">Recruta</span>
+                <span class="diff-desc">+3 corações · inimigos com 70% da vida e mais lentos · você causa 25% mais dano</span>
+              </button>
+              <button class="diff-card" data-difficulty="normal" type="button">
+                <span class="diff-name">NORMAL</span>
+                <span class="diff-tag">Aluno</span>
+                <span class="diff-desc">6 corações · inimigos e chefes no balanceamento original da escola</span>
+              </button>
+              <button class="diff-card" data-difficulty="dificil" type="button">
+                <span class="diff-name">DIFÍCIL</span>
+                <span class="diff-tag">Pesadelo</span>
+                <span class="diff-desc">−2 corações · inimigos com 140% da vida e 20% mais rápidos · chefes com 45% mais vida</span>
+              </button>
+            </div>
+            <div class="row">
+              <button id="btn-difficulty-close" class="btn primary" type="button">Voltar</button>
             </div>
           </div>
         </section>
@@ -218,6 +252,7 @@
   <script src="js/audio.js"></script>
   <script src="js/input.js"></script>
   <script src="js/config.js"></script>
+  <script src="js/difficulty.js"></script>
   <script src="js/api.js"></script>
   <script src="js/art.js"></script>
   <script src="js/world_art.js"></script>

@@ -21,20 +21,37 @@
     } catch (e) { return ''; }
   }
 
-  function resolveBase() {
+  function resolveBases() {
+    // ?api=... força um servidor só (usado nos testes e no dev local)
     const fromQuery = queryApi();
-    if (fromQuery) {
-      safeStorageSet(BASE_KEY, fromQuery);
-      return fromQuery;
-    }
+    if (fromQuery) return [fromQuery];
+
+    const list = [];
+    const push = function (value) {
+      const v = String(value || '').trim().replace(/\/+$/, '');
+      if (v && list.indexOf(v) < 0) list.push(v);
+    };
+
+    // a lista configurada: o primeiro que responder passa a ser o principal
+    if (Array.isArray(CONFIG.apiBases)) CONFIG.apiBases.forEach(push);
+    push(CONFIG.apiBase);
+
+    // a base que já funcionou neste dispositivo ganha a primeira vaga
     const saved = safeStorageGet(BASE_KEY);
-    if (saved) return String(saved).replace(/\/+$/, '');
-    const explicit = String(CONFIG.apiBase || '').trim().replace(/\/+$/, '');
+    if (saved) {
+      const v = String(saved).replace(/\/+$/, '');
+      const at = list.indexOf(v);
+      if (at > 0) {
+        list.splice(at, 1);
+        list.unshift(v);
+      }
+    }
+
     if (isLocalHost()) {
       const local = String(CONFIG.localApiBase || 'http://localhost:3001').trim().replace(/\/+$/, '');
-      return local || explicit;
+      if (local && list.indexOf(local) < 0) list.unshift(local);
     }
-    return explicit;
+    return list;
   }
 
   class ApiError extends Error {
@@ -47,11 +64,12 @@
   }
 
   const API = {
-    base: resolveBase(),
+    bases: resolveBases(),
+    base: resolveBases()[0] || '',
     token: safeStorageGet(TOKEN_KEY) || null,
     account: null,
     enabled: false,
-    timeoutMs: Math.max(2000, Number(CONFIG.requestTimeoutMs) || 8500),
+    timeoutMs: Math.max(2000, Number(CONFIG.requestTimeoutMs) || 15000),
     ApiError,
     online: false,
     lastError: null
@@ -93,11 +111,7 @@
     return API.account ? Object.assign({}, API.account) : null;
   };
 
-  async function request(path, options) {
-    if (!API.base) {
-      throw new ApiError('Servidor não configurado neste cliente.', 0, 'offline');
-    }
-    const opts = options || {};
+  async function requestOnce(base, path, opts) {
     const headers = { Accept: 'application/json' };
     if (opts.body !== undefined) headers['Content-Type'] = 'application/json';
     const authToken = opts.token || API.token;
@@ -106,7 +120,7 @@
     const controller = new AbortController();
     const timer = setTimeout(function () { controller.abort(); }, API.timeoutMs);
     try {
-      const response = await fetch(API.base + path, {
+      const response = await fetch(base + path, {
         method: opts.method || 'GET',
         headers,
         body: opts.body === undefined ? undefined : JSON.stringify(opts.body),
@@ -151,6 +165,33 @@
     } finally {
       clearTimeout(timer);
     }
+  }
+
+  /* Tenta os servidores configurados em ordem. Se o primeiro estiver fora
+     do ar (404, 5xx ou rede), cai para o proximo sem quebrar o jogo. */
+  async function request(path, options) {
+    const opts = options || {};
+    const bases = API.bases && API.bases.length ? API.bases : (API.base ? [API.base] : []);
+    if (!bases.length) {
+      throw new ApiError('Servidor não configurado neste cliente.', 0, 'offline');
+    }
+    let lastError = null;
+    for (let i = 0; i < bases.length; i++) {
+      const base = bases[i];
+      try {
+        const data = await requestOnce(base, path, opts);
+        if (API.base !== base) {
+          API.base = base;
+          safeStorageSet(BASE_KEY, base);
+        }
+        return data;
+      } catch (error) {
+        lastError = error;
+        const canRetry = API.isUnavailable(error) && i < bases.length - 1;
+        if (!canRetry) throw error;
+      }
+    }
+    throw lastError;
   }
 
   API.health = function () {

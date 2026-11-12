@@ -8,7 +8,9 @@ O **banco fica no Neon** (Postgres, plano gratuito) e a **API roda no Render**.
 ```
 back/
 ├── src/
-│   ├── app.ts          # rotas Express
+│   ├── app.ts          # rotas Express (Render / Node)
+│   ├── core.ts         # regra de negócio compartilhada
+│   ├── function.ts     # rotas Fetch API (Neon Functions)
 │   ├── config.ts       # leitura do ambiente
 │   ├── db.ts           # pool do Postgres
 │   ├── index.ts        # boot do servidor
@@ -27,6 +29,18 @@ back/
 O `render.yaml` do deploy fica na raiz do repositório (exigência do Render
 Blueprint) e aponta para esta pasta.
 
+## Arquitetura: um núcleo, dois transportes
+
+| Arquivo            | Papel                                                        |
+| ------------------ | ------------------------------------------------------------ |
+| `src/core.ts`      | **Toda a regra de negócio.** Não conhece HTTP.                |
+| `src/app.ts`       | Transporte **Express 5** (Node comum — Render, local, Docker).|
+| `src/function.ts`  | Transporte **Fetch API** (Neon Functions).                    |
+
+Os dois chamam as mesmas funções de `core.ts`, então o comportamento é
+idêntico nos dois hosts. `test/function.test.ts` cobre o caminho da Function
+com pg-mem.
+
 ## Banco no Neon
 
 O projeto `kennedito` já está criado com o schema aplicado. Para conectar:
@@ -43,6 +57,55 @@ DATABASE_SSL=true
 Use sempre a **pooled**: é ela que passa pelo pooler do Neon e aguenta o
 tráfego da API. A senha **nunca** vai para o GitHub — no `render.yaml` a
 variável está como `sync: false`, então o Render pede o valor no deploy.
+
+## Deploy como Function do Neon
+
+A API já está no ar em
+`https://br-autumn-fire-be1wf2tx-api.compute.c-9.us-east-2.aws.neon.tech`.
+O `DATABASE_URL` é injetado pelo Neon, então a senha não vai no comando.
+
+```bash
+neon functions deploy api \
+  --src back/src/function.ts \
+  --project-id wandering-fire-63343095 \
+  --branch br-autumn-fire-be1wf2tx \
+  --runtime nodejs24 \
+  --env "CORS_ORIGIN=*" \
+  --env "SESSION_DAYS=30" \
+  --env "BCRYPT_ROUNDS=10" \
+  --env "DATABASE_SSL=true" \
+  --wait
+```
+
+Para conferir o que está publicado:
+
+```bash
+neon functions list --project-id wandering-fire-63343095 --branch br-autumn-fire-be1wf2tx
+```
+
+## Deploy no Render
+
+O [`render.yaml`](../render.yaml) da raiz do repositório já descreve o web
+service completo (com o banco vindo do Neon):
+
+```bash
+# no Render: New → Blueprint, aponte para o repositório
+```
+
+O Blueprint cria o web service e, na hora do deploy, pede o `DATABASE_URL`
+(`sync: false`) — cole ali a **pooled connection string** do Neon. Assim a
+senha do banco nunca passa pelo GitHub.
+
+Manualmente:
+
+1. Crie um **Web Service** apontando para o repositório, com
+   *Root Directory* = `back`.
+2. Build: `npm install && npm run build` · Start: `npm run start`.
+3. Em *Environment*, adicione `DATABASE_URL` (pooled do Neon) e
+   `DATABASE_SSL=true`.
+4. Ajuste `CORS_ORIGIN` para o domínio do front.
+
+Depois é só colocar a URL da API em `front/js/config.js`.
 
 ## Rodando local
 
@@ -138,30 +201,6 @@ O save é salvo como `jsonb` e validado com zod em `validation.ts`:
 - Nome inexistente ainda roda um `verifyPin` falso, para não revelar pelo
   tempo de resposta quais apelidos existem.
 - `helmet` padrão: `nosniff`, `no-referrer` e `no-store`.
-
-## Deploy no Render
-
-O [`render.yaml`](../render.yaml) da raiz do repositório já descreve o web
-service completo (com o banco vindo do Neon):
-
-```bash
-# no Render: New → Blueprint, aponte para o repositório
-```
-
-O Blueprint cria o web service e, na hora do deploy, pede o `DATABASE_URL`
-(`sync: false`) — cole ali a **pooled connection string** do Neon. Assim a
-senha do banco nunca passa pelo GitHub.
-
-Manualmente:
-
-1. Crie um **Web Service** apontando para o repositório, com
-   *Root Directory* = `back`.
-2. Build: `npm install && npm run build` · Start: `npm run start`.
-3. Em *Environment*, adicione `DATABASE_URL` (pooled do Neon) e
-   `DATABASE_SSL=true`.
-4. Ajuste `CORS_ORIGIN` para o domínio do front.
-
-Depois é só colocar a URL da API em `front/js/config.js`.
 
 ## Testes
 

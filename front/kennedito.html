@@ -1256,7 +1256,9 @@ const KC_FONT_GLYPHS = {
   'ᚠ': ['01010', '00000', '00000', '00000', '00000', '00000', '00000']
 };
 
-/* Acentos do portugues: o glifo e a letra base com o acento na primeira linha. */
+/* Acentos do portugues: o glifo e a letra base com o acento na primeira linha.
+   A base de 7 linhas perde a ultima linha: as letras acentuadas ficam
+   um pixel mais baixas, o que e o padrao de fonte pixelada. */
 const KC_FONT_ACCENTS = {
   'Á': ['A', '00110'], 'À': ['A', '01100'], 'Â': ['A', '01010'],
   'Ã': ['A', '10010'], 'É': ['E', '00110'], 'È': ['E', '01100'],
@@ -1294,7 +1296,7 @@ function resolveGlyph(ch) {
   if (accent) {
     const base = KC_FONT_GLYPHS[accent[0]];
     if (base) {
-      // a letra base ocupa as linhas 1..6 e o acento fica na linha 0
+      // o acento fica na linha 0 e a letra base usa as linhas 1..6
       const rows = [accent[1]];
       for (let i = 0; i < 6; i++) rows.push(base[i]);
       return { rows: rows };
@@ -1958,13 +1960,24 @@ const audio = new AudioEngine();
 /* ===== js/config.js ===== */
 /* =========================================================
    KENNEDITO — configuração do cliente
-   Troque apiBase pela URL pública do backend no Render.
-   Ex.: https://jogo-cesar-api.onrender.com
+
+   A API é tentada na ordem da lista apiBases: o primeiro
+   que responder passa a ser o principal e fica salvo neste
+   dispositivo. Assim o jogo funciona com a Function do Neon
+   e também com o deploy no Render.
+
+   Sem nenhuma URL configurada o jogo roda 100% offline:
+   o progresso fica no localStorage e o ranking mostra só os
+   tempos salvos no próprio aparelho.
    ========================================================= */
 window.KC_CONFIG = {
-  apiBase: "",
+  apiBases: [
+    "https://br-autumn-fire-be1wf2tx-api.compute.c-9.us-east-2.aws.neon.tech",
+    "https://kennedito-api.onrender.com"
+  ],
+  apiBase: "https://br-autumn-fire-be1wf2tx-api.compute.c-9.us-east-2.aws.neon.tech",
   localApiBase: "http://localhost:3001",
-  requestTimeoutMs: 8500
+  requestTimeoutMs: 15000
 };
 
 /* ===== js/api.js ===== */
@@ -1991,20 +2004,37 @@ window.KC_CONFIG = {
     } catch (e) { return ''; }
   }
 
-  function resolveBase() {
+  function resolveBases() {
+    // ?api=... força um servidor só (usado nos testes e no dev local)
     const fromQuery = queryApi();
-    if (fromQuery) {
-      safeStorageSet(BASE_KEY, fromQuery);
-      return fromQuery;
-    }
+    if (fromQuery) return [fromQuery];
+
+    const list = [];
+    const push = function (value) {
+      const v = String(value || '').trim().replace(/\/+$/, '');
+      if (v && list.indexOf(v) < 0) list.push(v);
+    };
+
+    // a lista configurada: o primeiro que responder passa a ser o principal
+    if (Array.isArray(CONFIG.apiBases)) CONFIG.apiBases.forEach(push);
+    push(CONFIG.apiBase);
+
+    // a base que já funcionou neste dispositivo ganha a primeira vaga
     const saved = safeStorageGet(BASE_KEY);
-    if (saved) return String(saved).replace(/\/+$/, '');
-    const explicit = String(CONFIG.apiBase || '').trim().replace(/\/+$/, '');
+    if (saved) {
+      const v = String(saved).replace(/\/+$/, '');
+      const at = list.indexOf(v);
+      if (at > 0) {
+        list.splice(at, 1);
+        list.unshift(v);
+      }
+    }
+
     if (isLocalHost()) {
       const local = String(CONFIG.localApiBase || 'http://localhost:3001').trim().replace(/\/+$/, '');
-      return local || explicit;
+      if (local && list.indexOf(local) < 0) list.unshift(local);
     }
-    return explicit;
+    return list;
   }
 
   class ApiError extends Error {
@@ -2017,11 +2047,12 @@ window.KC_CONFIG = {
   }
 
   const API = {
-    base: resolveBase(),
+    bases: resolveBases(),
+    base: resolveBases()[0] || '',
     token: safeStorageGet(TOKEN_KEY) || null,
     account: null,
     enabled: false,
-    timeoutMs: Math.max(2000, Number(CONFIG.requestTimeoutMs) || 8500),
+    timeoutMs: Math.max(2000, Number(CONFIG.requestTimeoutMs) || 15000),
     ApiError,
     online: false,
     lastError: null
@@ -2063,11 +2094,7 @@ window.KC_CONFIG = {
     return API.account ? Object.assign({}, API.account) : null;
   };
 
-  async function request(path, options) {
-    if (!API.base) {
-      throw new ApiError('Servidor não configurado neste cliente.', 0, 'offline');
-    }
-    const opts = options || {};
+  async function requestOnce(base, path, opts) {
     const headers = { Accept: 'application/json' };
     if (opts.body !== undefined) headers['Content-Type'] = 'application/json';
     const authToken = opts.token || API.token;
@@ -2076,7 +2103,7 @@ window.KC_CONFIG = {
     const controller = new AbortController();
     const timer = setTimeout(function () { controller.abort(); }, API.timeoutMs);
     try {
-      const response = await fetch(API.base + path, {
+      const response = await fetch(base + path, {
         method: opts.method || 'GET',
         headers,
         body: opts.body === undefined ? undefined : JSON.stringify(opts.body),
@@ -2121,6 +2148,33 @@ window.KC_CONFIG = {
     } finally {
       clearTimeout(timer);
     }
+  }
+
+  /* Tenta os servidores configurados em ordem. Se o primeiro estiver fora
+     do ar (404, 5xx ou rede), cai para o proximo sem quebrar o jogo. */
+  async function request(path, options) {
+    const opts = options || {};
+    const bases = API.bases && API.bases.length ? API.bases : (API.base ? [API.base] : []);
+    if (!bases.length) {
+      throw new ApiError('Servidor não configurado neste cliente.', 0, 'offline');
+    }
+    let lastError = null;
+    for (let i = 0; i < bases.length; i++) {
+      const base = bases[i];
+      try {
+        const data = await requestOnce(base, path, opts);
+        if (API.base !== base) {
+          API.base = base;
+          safeStorageSet(BASE_KEY, base);
+        }
+        return data;
+      } catch (error) {
+        lastError = error;
+        const canRetry = API.isUnavailable(error) && i < bases.length - 1;
+        if (!canRetry) throw error;
+      }
+    }
+    throw lastError;
   }
 
   API.health = function () {
@@ -3326,9 +3380,9 @@ function drawProjectileSprite(ctx, p, t) {
     ctx.fillStyle = flash ? '#fff' : '#76392b';
     fillRoundRect(ctx, -7, -5, 14, 10, 1.5, flash ? '#fff' : '#76392b');
     ctx.fillStyle = flash ? '#fff' : '#f4e3b0';
-    fillRect(-5.5, -3.5, 11, 7);
+    ctx.fillRect(-5.5, -3.5, 11, 7);
     ctx.fillStyle = flash ? '#fff' : '#b99a62';
-    fillRect(-1, -3.5, 2, 7);
+    ctx.fillRect(-1, -3.5, 2, 7);
     for (let i = 0; i < 3; i++) {
       ctx.fillStyle = flash ? '#fff' : '#8d7856';
       ctx.fillRect(-4.5, -2 + i * 2, 8, 0.7);
@@ -10166,7 +10220,10 @@ class Game {
       this.ui.setAccountStatus('Conta conectada. O progresso será sincronizado automaticamente.', 'success');
       this.toast('Conta conectada na nuvem.', 2400);
     } catch (e) {
-      const msg = (e && e.message) ? e.message : 'Não foi possível conectar ao servidor.';
+      let msg = (e && e.message) ? e.message : 'Não foi possível conectar ao servidor.';
+      if (this.api && this.api.isNetworkError(e)) {
+        msg = 'O servidor da nuvem está fora do ar agora. Seu progresso continua salvo neste dispositivo — tente de novo em instantes.';
+      }
       this.ui.setAccountStatus(msg, 'error');
     } finally {
       this.accountBusy = false;

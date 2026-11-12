@@ -1134,9 +1134,9 @@ function drawProjectileSprite(ctx, p, t) {
     ctx.fillStyle = flash ? '#fff' : '#76392b';
     fillRoundRect(ctx, -7, -5, 14, 10, 1.5, flash ? '#fff' : '#76392b');
     ctx.fillStyle = flash ? '#fff' : '#f4e3b0';
-    fillRect(-5.5, -3.5, 11, 7);
+    ctx.fillRect(-5.5, -3.5, 11, 7);
     ctx.fillStyle = flash ? '#fff' : '#b99a62';
-    fillRect(-1, -3.5, 2, 7);
+    ctx.fillRect(-1, -3.5, 2, 7);
     for (let i = 0; i < 3; i++) {
       ctx.fillStyle = flash ? '#fff' : '#8d7856';
       ctx.fillRect(-4.5, -2 + i * 2, 8, 0.7);

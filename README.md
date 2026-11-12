@@ -104,18 +104,25 @@ Para apontar o ranking e as contas para a API, edite `front/js/config.js`:
 
 ```js
 window.KC_CONFIG = {
-  apiBase: "https://kennedito-api.onrender.com",
+  apiBases: [
+    "https://br-autumn-fire-be1wf2tx-api.compute.c-9.us-east-2.aws.neon.tech",
+    "https://kennedito-api.onrender.com"
+  ],
+  apiBase: "https://br-autumn-fire-be1wf2tx-api.compute.c-9.us-east-2.aws.neon.tech",
   localApiBase: "http://localhost:3001",
-  requestTimeoutMs: 8500
+  requestTimeoutMs: 15000
 };
 ```
 
-Sem `apiBase` o jogo funciona 100% offline: o save fica no `localStorage` e o
-ranking mostra apenas os tempos salvos no próprio dispositivo.
+O jogo tenta os endereços da lista em ordem e fica com o primeiro que
+responder. Sem nenhum endereço configurado o jogo funciona 100% offline: o save
+fica no `localStorage` e o ranking mostra apenas os tempos salvos no próprio
+dispositivo.
 
 ## Rodando o back
 
-O banco fica no **Neon** (Postgres) e a API no **Render**.
+O banco fica no **Neon** (Postgres) e a API roda no **Render** ou como
+**Function do Neon** — as duas opções usam o mesmo código em `back/src/core.ts`.
 
 ```bash
 cd back
@@ -125,6 +132,24 @@ npm run dev               # http://localhost:3001
 ```
 
 Detalhes de ambiente, endpoints e deploy no [`back/README.md`](back/README.md).
+
+## API no ar
+
+A API já está publicada e funcionando:
+
+```
+https://br-autumn-fire-be1wf2tx-api.compute.c-9.us-east-2.aws.neon.tech
+```
+
+| Rota                    | O que faz                             |
+| ----------------------- | ------------------------------------- |
+| `GET /api/health`       | Status da API e do banco              |
+| `POST /api/accounts`    | Cria a conta (apelido + PIN de 4 dígitos) |
+| `POST /api/accounts/login` | Entra na conta                     |
+| `GET /api/me`           | Dados da conta e save                 |
+| `PUT /api/me/save`      | Salva o progresso                     |
+| `GET /api/leaderboard`  | Melhores tempos                       |
+| `POST /api/runs`        | Envia um tempo para o ranking         |
 
 ## Licença
 

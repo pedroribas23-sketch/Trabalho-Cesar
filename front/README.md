@@ -58,6 +58,29 @@ python -m http.server 8080
 Ou abra o `index.html` direto no navegador (funciona, mas o `localStorage`
 fica atrelado ao `file://` em alguns navegadores).
 
+## A API
+
+`js/config.js` tem a lista de endereços da API:
+
+```js
+window.KC_CONFIG = {
+  apiBases: [
+    "https://br-autumn-fire-be1wf2tx-api.compute.c-9.us-east-2.aws.neon.tech",
+    "https://kennedito-api.onrender.com"
+  ],
+  apiBase: "https://br-autumn-fire-be1wf2tx-api.compute.c-9.us-east-2.aws.neon.tech",
+  localApiBase: "http://localhost:3001",
+  requestTimeoutMs: 15000
+};
+```
+
+O jogo tenta os endereços da lista em ordem e fica com o primeiro que
+responder (guardando no `localStorage`). Se o primeiro estiver fora do ar,
+ele cai para o próximo sozinho — a conta e o ranking continuam funcionando.
+
+Para apontar para um servidor local durante o desenvolvimento, use a query:
+`http://localhost:8080/?api=http://localhost:3001`.
+
 ## O arquivo único
 
 `kennedito.html` tem todo o jogo embutido em um único arquivo (HTML + CSS + JS),

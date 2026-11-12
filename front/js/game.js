@@ -1980,7 +1980,10 @@ class Game {
       this.ui.setAccountStatus('Conta conectada. O progresso será sincronizado automaticamente.', 'success');
       this.toast('Conta conectada na nuvem.', 2400);
     } catch (e) {
-      const msg = (e && e.message) ? e.message : 'Não foi possível conectar ao servidor.';
+      let msg = (e && e.message) ? e.message : 'Não foi possível conectar ao servidor.';
+      if (this.api && this.api.isNetworkError(e)) {
+        msg = 'O servidor da nuvem está fora do ar agora. Seu progresso continua salvo neste dispositivo — tente de novo em instantes.';
+      }
       this.ui.setAccountStatus(msg, 'error');
     } finally {
       this.accountBusy = false;

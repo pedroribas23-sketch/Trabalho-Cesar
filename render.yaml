@@ -25,6 +25,10 @@ services:
       # Use a POOLED connection string: ela passa pelo pooler do Neon.
       # sync: false -> o Render pede o valor no momento do deploy, e a
       # senha do banco NUNCA fica no GitHub.
+      #
+      # A API ja esta no ar como Function do Neon:
+      # https://br-autumn-fire-be1wf2tx-api.compute.c-9.us-east-2.aws.neon.tech
+      # Este Blueprint e a alternativa para hospedar no Render.
       - key: DATABASE_URL
         sync: false
       # O Neon exige SSL na conexao.
